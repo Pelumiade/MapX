@@ -1,0 +1,1091 @@
+openapi: 3.0.3
+info:
+  title: MAPX
+  version: 0.0.0
+paths:
+  /accounts/api/:
+    post:
+      operationId: accounts_api_create
+      description: |-
+        An Api View which provides a method to request a password reset token based on an e-mail address
+
+        Sends a signal reset_password_token_created when a reset token was created
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /accounts/api/change_password/:
+    put:
+      operationId: accounts_api_change_password_update
+      description: An endpoint for changing password.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+    patch:
+      operationId: accounts_api_change_password_partial_update
+      description: An endpoint for changing password.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedChangePassword'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+  /accounts/api/confirm/:
+    post:
+      operationId: accounts_api_confirm_create
+      description: An Api View which provides a method to reset a password based on
+        a unique token
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /accounts/api/forgot_password/:
+    post:
+      operationId: accounts_api_forgot_password_create
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /accounts/api/logout/:
+    post:
+      operationId: accounts_api_logout_create
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /accounts/api/password_reset/:
+    post:
+      operationId: accounts_api_password_reset_create
+      description: |-
+        An Api View which provides a method to request a password reset token based on an e-mail address
+
+        Sends a signal reset_password_token_created when a reset token was created
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Email'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /accounts/api/password_reset/confirm/:
+    post:
+      operationId: accounts_api_password_reset_confirm_create
+      description: An Api View which provides a method to reset a password based on
+        a unique token
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /accounts/api/password_reset/validate_token/:
+    post:
+      operationId: accounts_api_password_reset_validate_token_create
+      description: An Api View which provides a method to verify that a token is valid
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetToken'
+          description: ''
+  /accounts/api/setnew_password/:
+    put:
+      operationId: accounts_api_setnew_password_update
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /accounts/api/validate_token/:
+    post:
+      operationId: accounts_api_validate_token_create
+      description: An Api View which provides a method to verify that a token is valid
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetToken'
+          description: ''
+  /accounts/api/verify_code/:
+    post:
+      operationId: accounts_api_verify_code_create
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/admin/field-officers/:
+    get:
+      operationId: api_admin_field_officers_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFieldOfficerList'
+          description: ''
+  /api/admin/fieldofficers/{id}/update/:
+    get:
+      operationId: api_admin_fieldofficers_update_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldOfficer'
+          description: ''
+    put:
+      operationId: api_admin_fieldofficers_update_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldOfficer'
+          description: ''
+    patch:
+      operationId: api_admin_fieldofficers_update_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFieldOfficer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFieldOfficer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFieldOfficer'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldOfficer'
+          description: ''
+  /api/admin/fieldofficers/create/:
+    post:
+      operationId: api_admin_fieldofficers_create_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FieldOfficer'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldOfficer'
+          description: ''
+  /api/api/activity-log/:
+    get:
+      operationId: api_api_activity_log_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/api/admin/profile/:
+    get:
+      operationId: api_api_admin_profile_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/farmers/{id}/:
+    get:
+      operationId: api_farmers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Farmer'
+          description: ''
+  /api/farmers/create/:
+    post:
+      operationId: api_farmers_create_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmerCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmerCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmerCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerCreate'
+          description: ''
+  /api/farmers/list/:
+    get:
+      operationId: api_farmers_list_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFarmerListList'
+          description: ''
+  /api/farmland/{farmer_id}/create/:
+    post:
+      operationId: api_farmland_create_create
+      parameters:
+      - in: path
+        name: farmer_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmlandCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmlandCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmlandCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmlandCreate'
+          description: ''
+  /api/login/:
+    post:
+      operationId: api_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: api_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+components:
+  schemas:
+    ChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+      required:
+      - new_password
+      - old_password
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    Farmer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firstname:
+          type: string
+          maxLength: 100
+        lastname:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        country:
+          type: string
+          maxLength: 50
+        state:
+          type: string
+          nullable: true
+          maxLength: 50
+        city:
+          type: string
+          nullable: true
+          maxLength: 50
+        picture:
+          type: string
+          format: uri
+      required:
+      - country
+      - email
+      - firstname
+      - id
+      - lastname
+      - phone
+      - picture
+    FarmerCreate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firstname:
+          type: string
+          maxLength: 100
+        lastname:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        country:
+          type: string
+          maxLength: 50
+        state:
+          type: string
+          nullable: true
+          maxLength: 50
+        city:
+          type: string
+          nullable: true
+          maxLength: 50
+        picture:
+          type: string
+          format: uri
+      required:
+      - country
+      - email
+      - firstname
+      - id
+      - lastname
+      - phone
+      - picture
+    FarmerList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        firstname:
+          type: string
+          maxLength: 100
+        lastname:
+          type: string
+          maxLength: 100
+        folio_id:
+          type: string
+          maxLength: 10
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        country:
+          type: string
+          maxLength: 50
+        state:
+          type: string
+          nullable: true
+          maxLength: 50
+        city:
+          type: string
+          nullable: true
+          maxLength: 50
+        picture:
+          type: string
+          format: uri
+      required:
+      - country
+      - email
+      - firstname
+      - folio_id
+      - id
+      - lastname
+      - phone
+      - picture
+    FarmlandCreate:
+      type: object
+      properties:
+        size:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        area:
+          type: string
+          maxLength: 50
+        longitude:
+          type: number
+          format: double
+        latitude:
+          type: number
+          format: double
+        picture:
+          type: string
+          format: uri
+        farm_address:
+          type: string
+          maxLength: 250
+      required:
+      - area
+      - farm_address
+      - latitude
+      - longitude
+      - picture
+      - size
+    FieldOfficer:
+      type: object
+      properties:
+        picture:
+          type: string
+          format: uri
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        firstname:
+          type: string
+          maxLength: 100
+        lastname:
+          type: string
+          maxLength: 100
+        phone_number:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 50
+        state:
+          type: string
+          maxLength: 50
+        city:
+          type: string
+          maxLength: 50
+        location:
+          type: string
+          maxLength: 100
+        num_farmers_assigned:
+          type: integer
+        num_farms_mapped:
+          type: integer
+        progress_level:
+          type: string
+          readOnly: true
+      required:
+      - city
+      - country
+      - email
+      - firstname
+      - lastname
+      - location
+      - phone_number
+      - picture
+      - progress_level
+      - state
+    PaginatedFarmerListList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FarmerList'
+    PaginatedFieldOfficerList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfficer'
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+      required:
+      - password
+      - token
+    PatchedChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+        new_password:
+          type: string
+    PatchedFieldOfficer:
+      type: object
+      properties:
+        picture:
+          type: string
+          format: uri
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 255
+        firstname:
+          type: string
+          maxLength: 100
+        lastname:
+          type: string
+          maxLength: 100
+        phone_number:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 50
+        state:
+          type: string
+          maxLength: 50
+        city:
+          type: string
+          maxLength: 50
+        location:
+          type: string
+          maxLength: 100
+        num_farmers_assigned:
+          type: integer
+        num_farms_mapped:
+          type: integer
+        progress_level:
+          type: string
+          readOnly: true
+    ResetToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
