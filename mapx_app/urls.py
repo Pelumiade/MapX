@@ -5,7 +5,6 @@ from django.urls import path
 urlpatterns = [
     # FieldOfficer URLs
    # path('fieldofficers/', FieldOfficerListCreateView.as_view(), name='fieldofficer-list-create'),
-    
     # Farmer URLs
     path('farmers/create/', FarmerCreateView.as_view(), name='farmer_create'),
     path('farmers/list/', FarmerListAPIView.as_view(), name='farmer_list'),
