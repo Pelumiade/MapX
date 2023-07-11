@@ -77,7 +77,11 @@ class FarmerCreateView(generics.CreateAPIView):
         field_officer = self.request.user.fieldofficer  # Get the field officer associated with the request user
         serializer.save(assigned_field_officer=field_officer)
 
+    # Increase the number of assigned farmers for the field officer
+        field_officer.num_farmers_assigned += 1
+        field_officer.save()
 
+  
 class FarmerListAPIView(generics.ListAPIView):
     queryset = Farmer.objects.all()
     serializer_class = FarmerListSerializer
@@ -99,6 +103,12 @@ class FarmlandCreateAPIView(generics.CreateAPIView):
         farmer = Farmer.objects.get(id=farmer_id)
         field_officer = self.request.user.fieldofficer  # Get the field officer associated with the request user
         serializer.save(farmer=farmer, field_officer=field_officer)
+
+        # Increase the number of mapped farmlands for the field officer
+        field_officer.num_farms_mapped += 1
+        field_officer.save()
+
+        # Update the is_mapped status of the farmer
         farmer.is_mapped = True
         farmer.save()
 

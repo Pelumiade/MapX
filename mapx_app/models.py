@@ -15,7 +15,7 @@ User = get_user_model()
 
 class FieldOfficer(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    picture = models.ImageField(upload_to='farm_pictures/')
+    picture = models.ImageField(upload_to='media/')
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     email = models.EmailField(max_length=255, unique=True, verbose_name="email address")
@@ -91,7 +91,7 @@ class Farmer(models.Model):
     country = models.CharField(max_length=50)
     state =  models.CharField(max_length=50)
     city =  models.CharField(max_length=50)
-    picture = models.ImageField(upload_to='farm_pictures/')
+    picture = models.ImageField(upload_to='media/')
     is_mapped = models.BooleanField(default=False)
 
     def __str__(self):
@@ -109,8 +109,8 @@ class Farmer(models.Model):
     def generate_folio_id(self):
         unique_id = uuid.uuid4().hex[:8]  # Generate a unique identifier
         current_year = datetime.now().year
-        time_now = datetime.now().strftime("%H%M%S")
-        folio_id = f"AM{current_year}{time_now}{unique_id}"
+        #time_now = datetime.now().strftime("%H%M%S")
+        folio_id = f"AM{current_year}{unique_id}"
         return folio_id[:10]  # Trim the folio_id to 10 characters
 
     @property
@@ -126,7 +126,7 @@ class Farmland(models.Model):
     area = models.CharField(max_length=50)
     longitude = models.FloatField()
     latitude = models.FloatField()
-    picture = models.ImageField(upload_to='farm_pictures/')
+    picture = models.ImageField(upload_to='media/')
     farm_address = models.CharField(max_length=250)
 
 

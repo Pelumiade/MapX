@@ -46,7 +46,7 @@ class FarmerSerializer(serializers.ModelSerializer):
 class FarmlandCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmland
-        fields = ['size', 'area', 'longitude', 'latitude', 'farm_address']
+        fields = ['size', 'area', 'longitude', 'latitude', 'picture', 'farm_address']
 
         
 class FieldOfficerSerializer(serializers.ModelSerializer):
@@ -57,8 +57,8 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = FieldOfficer
-        fields = ['email', 'location', 'name', 'firstname', 'lastname', 'email', 'phone_number', 'country', 'state' , 'city', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 'delete_url', 'update_url']
-        read_only_fields = ['id']
+        fields = ['email', 'location', 'name', 'firstname', 'lastname', 'email', 'phone_number', 'country', 'state' , 'city', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 'delete_url', 'update_url', 'picture']
+        read_only_fields = ['delete_url', 'update_url', 'location', 'name']
 
 
     def get_name(self, obj):
@@ -97,7 +97,7 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         return field_officer
 
     def update(self, instance, validated_data):
-       # instance.picture = validated_data.get('picture', instance.picture)
+        instance.picture = validated_data.get('picture', instance.picture)
         instance.firstname = validated_data.get('firstname', instance.firstname)
         instance.lastname = validated_data.get('lastname', instance.lastname)
         instance.email = validated_data.get('email', instance.email)
@@ -108,6 +108,16 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if self.context['request'].method in ['GET', 'HEAD']:
+            # Exclude fields during listing
+            del representation['firstname']
+            del representation['lastname']
+            del representation['state']
+            del representation['city']
+        return representation
     
 
 class FarmlandSerializer(serializers.ModelSerializer):
