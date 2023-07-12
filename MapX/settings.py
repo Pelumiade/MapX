@@ -28,8 +28,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #SECRET_KEY = 'django-insecure-ete^2=ws6(uk5r40qq7_fqiem)+q(f%bvt6yuz)4%$7ds9(trl'
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
+
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG ='RENDER' not in os.environ
+
 
 ALLOWED_HOSTS = ['*']
 
@@ -60,6 +62,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     #'corsheaders.middleware.CorsMiddleware'
     'django.middleware.common.CommonMiddleware',
@@ -216,6 +219,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Africa/Lagos'
 CELERY_RESULT_BACKEND = 'django-db'
 
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 #GDAL_LIBRARY_PATH = 'C:\\Program Files\\gdal-3.7.0\\gdal-3.7.0\\scripts'
