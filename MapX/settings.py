@@ -218,3 +218,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CORS_ALLOW_ALL_ORIGINS = True
 
 #GDAL_LIBRARY_PATH = 'C:\\Program Files\\gdal-3.7.0\\gdal-3.7.0\\scripts'
+CSRF_TRUSTED_ORIGINS = ['https://mapx.onrender.com',]
