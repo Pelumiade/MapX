@@ -13,28 +13,31 @@ class FarmerListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'firstname', 'lastname', 'folio_id', 'phone',  'address', 'email', 'country', 'state', 'city']
    
     def get_name(self, obj):
-        if 'request' in self.context:
-            request = self.context['request']
-            if request.method == 'GET':
-                # Combine firstname and lastname for GET request (listing)
-                return f"{obj.firstname} {obj.lastname}"
-        # Return the existing name field for other request types
-        return obj.name
+        if hasattr(obj, 'firstname') and hasattr(obj, 'lastname'):
+            if 'request' in self.context:
+                request = self.context['request']
+                if request.method == 'GET':
+                    # Combine firstname and lastname for GET request (listing)
+                    return f"{obj.firstname} {obj.lastname}"
+        # Return None or a default value if 'firstname' and 'lastname' attributes are not available
+        return None
     
     def get_address(self, obj):
-        if 'request' in self.context:
-            request = self.context['request']
-            if request.method == 'GET':
-                # Combine state and city for GET request (listing)
-                return f"{obj.state}, {obj.city}"
-        # Return the existing location field for other request types
-        return obj.address
+
+        if hasattr(obj, 'state') and hasattr(obj, 'city'):
+            if 'request' in self.context:
+                request = self.context['request']
+                if request.method == 'GET':
+                    # Combine state and city for GET request (listing)
+                    return f"{obj.state}, {obj.city}"
+        # Return None or a default value if 'state' and 'city' attributes are not available
+        return None
     
 
 class FarmerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmer
-        exclude = ['folio_id', 'assigned_field_officer', 'picture']
+        exclude = ['folio_id', 'assigned_field_officer']
 
 
 class FarmerSerializer(serializers.ModelSerializer):
@@ -62,35 +65,38 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
 
 
     def get_name(self, obj):
-        if 'request' in self.context:
-            request = self.context['request']
-            if request.method == 'GET':
-                # Combine firstname and lastname for GET request (listing)
-                return f"{obj.firstname} {obj.lastname}"
-        # Return the existing name field for other request types
-        return obj.name
+        if hasattr(obj, 'firstname') and hasattr(obj, 'lastname'):
+            if 'request' in self.context:
+                request = self.context['request']
+                if request.method == 'GET':
+                    # Combine firstname and lastname for GET request (listing)
+                    return f"{obj.firstname} {obj.lastname}"
+        # Return None or a default value if 'firstname' and 'lastname' attributes are not available
+        return None
     
     def get_location(self, obj):
-        if 'request' in self.context:
-            request = self.context['request']
-            if request.method == 'GET':
-                # Combine state and city for GET request (listing)
-                return f"{obj.state}, {obj.city}"
-        # Return the existing location field for other request types
-        return obj.location
+
+        if hasattr(obj, 'state') and hasattr(obj, 'city'):
+            if 'request' in self.context:
+                request = self.context['request']
+                if request.method == 'GET':
+                    # Combine state and city for GET request (listing)
+                    return f"{obj.state}, {obj.city}"
+        # Return None or a default value if 'state' and 'city' attributes are not available
+        return None
 
     def get_delete_url(self, obj):
         request = self.context.get('request')
         if request is None:
             return None
-        return reverse("mapx_app:fieldofficer_delete",  args=(obj.id), request=request)
+        return reverse("mapx_app:fieldofficer_delete",  kwargs={"id": obj.id}, request=request)
         
     def get_update_url(self, obj):
         request = self.context.get('request')
         if request is None:
             return None
-        return reverse("mapx_app:fieldofficer_update", args=(obj.id), request=request)
-        
+        return reverse("mapx_app:fieldofficer_update", kwargs={"id": obj.id}, request=request)
+    
 
     def create(self, validated_data):
         field_officer = FieldOfficer.objects.create(**validated_data)
