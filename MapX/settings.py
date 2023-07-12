@@ -94,7 +94,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MapX.wsgi.application'
 
-CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -214,5 +214,7 @@ CELERY_TIMEZONE = 'Africa/Lagos'
 CELERY_RESULT_BACKEND = 'django-db'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 #GDAL_LIBRARY_PATH = 'C:\\Program Files\\gdal-3.7.0\\gdal-3.7.0\\scripts'
