@@ -107,9 +107,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # }
 
 DATABASES = {
-
     'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-
 }
 
 # Password validation
@@ -155,8 +153,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT= BASE_DIR / 'media'
-
+MEDIA_ROOT=BASE_DIR, 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -174,30 +171,19 @@ SIMPLE_JWT = {
 }
 
 
-
-
 REST_FRAMEWORK = {
 
     "DEFAULT_AUTHENTICATION_CLASSES": [
-
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-
         "rest_framework.authentication.SessionAuthentication",
-
     ],
 
     "DEFAULT_PERMISSION_CLASSES": [
-
         "rest_framework.permissions.IsAuthenticated"
-
     ],
-
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-
     "PAGE_SIZE": 10,
-
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
 }
 
 SPECTACULAR_SETTINGS = {
