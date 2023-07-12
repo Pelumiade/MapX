@@ -20,7 +20,7 @@ from .serializers import FieldOfficerSerializer
 
 
 class AdminDashboardAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
 
     def get(self, request):
         # Total number of field officers
@@ -85,7 +85,7 @@ class FarmerCreateView(generics.CreateAPIView):
 class FarmerListAPIView(generics.ListAPIView):
     queryset = Farmer.objects.all()
     serializer_class = FarmerListSerializer
-    permission_classes = [IsAuthenticated, IsFieldOfficerUser]
+    permission_classes = [IsAuthenticated, IsFieldOfficerUser, IsSuperuserOrAdminUser]
 
     def get_queryset(self):
         field_officer = self.request.user.fieldofficer
@@ -128,8 +128,8 @@ class FieldOfficerCreateAPIView(generics.CreateAPIView):
 
 class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = FieldOfficerSerializer
-    permission_classes = [IsAdminUser]
     queryset = FieldOfficer.objects.all()
+    permission_classes = [IsAdminUser, IsAuthenticated]  
     lookup_field = 'id'
 
 
@@ -149,7 +149,7 @@ class FieldOfficerDeleteAPIView(DestroyAPIView):
 
 
 class AdminProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
         user = request.user  # Get the current logged-in user (admin)
@@ -184,6 +184,7 @@ class AdminProfileAPIView(APIView):
     
 
 class ActivityLogListAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
     def get(self, request):
         logs = ActivityLog.objects.all()
         serializer = ActivityLogSerializer(logs, many=True)

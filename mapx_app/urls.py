@@ -17,6 +17,6 @@ urlpatterns = [
     path('admin/fieldofficers/<int:id>/update/', FieldOfficerUpdateAPIView.as_view(), name='fieldofficer_update'),
     path('fieldofficer/<int:id>/delete/', FieldOfficerDeleteAPIView.as_view(), name='fieldofficer_delete'),
     path('admin/fieldofficers/list/', FieldOfficerListAPIView.as_view(), name='field_officer_list'),
-    path('api/admin/profile/', AdminProfileAPIView.as_view(), name='admin_profile_api'),
-    path('api/activity-log/', ActivityLogListAPIView.as_view(), name='activity_log_list'),
+    path('admin/profile/', AdminProfileAPIView.as_view(), name='admin_profile_api'),
+    path('activitylog/', ActivityLogListAPIView.as_view(), name='activity_log'),
 ]
