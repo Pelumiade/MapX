@@ -26,12 +26,13 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from accounts.views import LoginAPIView
 app_name = 'mapx_app'
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/login/', LoginAPIView.as_view(), name='login'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/', include('mapx_app.urls')),
     path('accounts/', include('accounts.urls')),

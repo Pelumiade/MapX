@@ -14,10 +14,10 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class FieldOfficer(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="feo")
     picture = models.ImageField(upload_to='media/')
-    firstname = models.CharField(max_length=100)
-    lastname = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     email = models.EmailField(max_length=255, unique=True, verbose_name="email address")
     phone_number = models.CharField(max_length=20)
     country = models.CharField(max_length=50)
@@ -27,17 +27,18 @@ class FieldOfficer(models.Model):
     num_farms_mapped = models.PositiveIntegerField(default=0)
     progress_level = models.IntegerField(editable=False)
     is_deleted = models.BooleanField(default=False)
+    location = models.CharField(max_length=255, null=True, blank=True)
 
 
     class Meta:
         indexes = [
-            models.Index(fields=["lastname", "firstname", "email"]),
+            models.Index(fields=["last_name", "first_name", "email"]),
         ]
     def __str__(self):
         return self.get_full_name()
 
     def get_full_name(self):
-        return f'{self.firstname} {self.lastname}'
+        return f'{self.first_name} {self.last_name}'
     
     def delete(self, *args, **kwargs):
         self.is_deleted = True
@@ -75,15 +76,15 @@ class FieldOfficer(models.Model):
 
             # Send email with login details
             subject = "Login Details for Mapping App"
-            message = f"Dear {self.firstname},\n\nYour account has been created for the Mapping App.\n\nEmail: {self.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe Mapping App Team"
+            message = f"Dear {self.first_name},\n\nYour account has been created for the Mapping App.\n\nEmail: {self.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe Mapping App Team"
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
         super().save(*args, **kwargs)
         
 
 class Farmer(models.Model):
-    firstname = models.CharField(max_length=100)
-    lastname = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     folio_id = models.CharField(max_length=10, unique=True)
     phone = models.CharField(max_length=20)
     email = models.EmailField(max_length=255, unique=True, verbose_name="email address")
@@ -98,7 +99,7 @@ class Farmer(models.Model):
         return self.get_full_name()
 
     def get_full_name(self):
-        return f'{self.firstname} {self.lastname}'
+        return f'{self.first_name} {self.last_name}'
     
 
     def save(self, *args, **kwargs):

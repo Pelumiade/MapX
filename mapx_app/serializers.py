@@ -10,16 +10,16 @@ class FarmerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Farmer
-        fields = ['id', 'name', 'firstname', 'lastname', 'folio_id', 'phone',  'address', 'email', 'country', 'state', 'city']
+        fields = ['id', 'name', 'first_name', 'last_name', 'folio_id', 'phone',  'address', 'email', 'country', 'state', 'city']
    
     def get_name(self, obj):
-        if hasattr(obj, 'firstname') and hasattr(obj, 'lastname'):
+        if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
             if 'request' in self.context:
                 request = self.context['request']
                 if request.method == 'GET':
-                    # Combine firstname and lastname for GET request (listing)
-                    return f"{obj.firstname} {obj.lastname}"
-        # Return None or a default value if 'firstname' and 'lastname' attributes are not available
+                    # Combine first_name and last_name for GET request (listing)
+                    return f"{obj.first_name} {obj.last_name}"
+        # Return None or a default value if 'first_name' and 'last_name' attributes are not available
         return None
     
     def get_address(self, obj):
@@ -43,7 +43,7 @@ class FarmerCreateSerializer(serializers.ModelSerializer):
 class FarmerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmer
-        fields = ['id', 'firstname', 'lastname', 'phone', 'email',  'country', 'state', 'city']
+        fields = ['id', 'first_name', 'last_name', 'phone', 'email',  'country', 'state', 'city']
 
 
 class FarmlandCreateSerializer(serializers.ModelSerializer):
@@ -60,18 +60,18 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = FieldOfficer
-        fields = ['email', 'location', 'name', 'firstname', 'lastname', 'email', 'phone_number', 'country', 'state' , 'city', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 'delete_url', 'update_url', 'picture']
+        fields = ['email', 'location', 'name', 'first_name', 'last_name', 'email', 'phone_number', 'country', 'state' , 'city', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 'delete_url', 'update_url', 'picture']
         read_only_fields = ['delete_url', 'update_url', 'location', 'name']
 
 
     def get_name(self, obj):
-        if hasattr(obj, 'firstname') and hasattr(obj, 'lastname'):
+        if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
             if 'request' in self.context:
                 request = self.context['request']
                 if request.method == 'GET':
-                    # Combine firstname and lastname for GET request (listing)
-                    return f"{obj.firstname} {obj.lastname}"
-        # Return None or a default value if 'firstname' and 'lastname' attributes are not available
+                    # Combine first_name and last_name for GET request (listing)
+                    return f"{obj.first_name} {obj.last_name}"
+        # Return None or a default value if 'first_name' and 'last_name' attributes are not available
         return None
     
     def get_location(self, obj):
@@ -104,8 +104,8 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.picture = validated_data.get('picture', instance.picture)
-        instance.firstname = validated_data.get('firstname', instance.firstname)
-        instance.lastname = validated_data.get('lastname', instance.lastname)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
         instance.email = validated_data.get('email', instance.email)
         instance.phone_number = validated_data.get('phone_number', instance.phone_number)
         instance.country = validated_data.get('country', instance.country)
@@ -119,8 +119,8 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         if self.context['request'].method in ['GET', 'HEAD']:
             # Exclude fields during listing
-            del representation['firstname']
-            del representation['lastname']
+            del representation['first_name']
+            del representation['last_name']
             del representation['state']
             del representation['city']
         return representation
@@ -147,7 +147,7 @@ class AdminSerializer(serializers.Serializer):
 class AdminFieldOfficerSerializer(serializers.ModelSerializer):
     class Meta:
         model = FieldOfficer
-        fields = ['firstname','lastname' ,'state', 'country']
+        fields = ['first_name','last_name' ,'state', 'country']
 
 
 class AdminFarmlandSerializer(serializers.ModelSerializer):
@@ -157,7 +157,7 @@ class AdminFarmlandSerializer(serializers.ModelSerializer):
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.firstname')
+    user = serializers.CharField(source='user.first_name')
     user_type = serializers.SerializerMethodField()
 
     class Meta:

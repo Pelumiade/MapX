@@ -23,7 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     designation =  models.CharField(max_length=100)
-    PhoneNumber = PhoneNumberField(unique=True, null=True)
+    phone_number = PhoneNumberField(unique=True, null=True)
     picture = models.ImageField(upload_to='accounts/media', blank=True, null=True)
     location = models.CharField(max_length=255, null=True, blank=True)
     verification_code = models.CharField(max_length=100, null=True, blank=True)

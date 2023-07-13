@@ -18,6 +18,7 @@ from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import GenericAPIView
 from accounts.models import User
 
@@ -32,24 +33,11 @@ class CustomObtainAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key})
 
-class LoginAPIView(APIView):
+class LoginAPIView(TokenObtainPairView):
+    serializer_class = LoginSerializer
+
     def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-
-            # Authenticate user
-            user = authenticate(email=email, password=password)
-            if user is not None:
-                # Generate or get token
-                token, _ = Token.objects.get_or_create(user=user)
-
-                return Response({'token': token.key}, status=status.HTTP_200_OK)
-
-            return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return super().post(request, *args, **kwargs)
     
 
 class ForgotPasswordAPIView(APIView):
