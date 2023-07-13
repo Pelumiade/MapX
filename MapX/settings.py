@@ -54,11 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_spectacular',
     'accounts',
-    'mapx_app',
-  
-    
-   
-    
+    'mapx_app',   
 ]
 
 MIDDLEWARE = [
