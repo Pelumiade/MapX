@@ -1,26 +1,27 @@
-from django.shortcuts import render
+from django.contrib.auth import get_user_model, authenticate
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Create your views here.
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-from .serializers import ChangePasswordSerializer
-from rest_framework.permissions import IsAuthenticated   
+   
 from random import randint
 from rest_framework.views import APIView
-from django.core.mail import send_mail  
-from django.conf import settings
-from .serializers import ForgotPasswordSerializer, SetNewPasswordSerializer, VerifyCodeSerializer, LoginSerializer
+
 from rest_framework.authtoken.views import ObtainAuthToken
-from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import GenericAPIView
 from accounts.models import User
+from .serializers import (
+    ForgotPasswordSerializer, SetNewPasswordSerializer, 
+    VerifyCodeSerializer, LoginSerializer, ChangePasswordSerializer
+    )
 
 
 
@@ -32,6 +33,7 @@ class CustomObtainAuthToken(ObtainAuthToken):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key})
+
 
 class LoginAPIView(TokenObtainPairView):
     serializer_class = LoginSerializer

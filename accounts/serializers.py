@@ -9,15 +9,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 User = get_user_model()
 
 class ChangePasswordSerializer(serializers.Serializer):
-    model = User
-
     """
     Serializer for password change endpoint.
     """
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True)
 
-    from rest_framework import serializers
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
@@ -39,20 +36,20 @@ class LoginSerializer(serializers.Serializer):
                 "last_name": user.last_name,
                 "designation": user.designation,
                 "picture": user.picture.url if user.picture else "lol",
-                "location": user.location,
+                "location": user.admin.location.country.name,
                 "role": "Admin",
                 "phone_number": user.phone_number.national_number,
             }
         else:
             payload = {
                 "email": email,
-                "first_name": user.feo.first_name,
-                "last_name": user.feo.last_name,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
                 "designation": "Field Executive Officer",
-                "picture": user.feo.picture.url if user.feo.picture else "lol",
-                "location": user.feo.location,
+                "picture": user.picture.url if user.picture else "Populate with defautl image url",
+                "location": user.feo.location.country.name,
                 "role": "Field Executive Officer",
-                "phone_number": user.feo.phone_number,
+                "phone_number": user.phone_number.national_number,
             }
         
         return payload

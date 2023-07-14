@@ -1,57 +1,31 @@
-from django.db import models
-
-# Create your models here.
-from django.contrib.auth.models import User
+import uuid
+from pytz import country_names
 from datetime import datetime
+
+from django.contrib.auth import get_user_model
 from django.db import models
-from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
-import uuid
-from django.contrib.auth import get_user_model
+
+from accounts.models import User
 
 
-User = get_user_model()
+class Admin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admin")
+    location = models.ForeignKey(
+        'mapx_app.Location', on_delete=models.SET_NULL, null=True)
+
 
 class FieldOfficer(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="feo")
-    picture = models.ImageField(upload_to='media/')
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(max_length=255, unique=True, verbose_name="email address")
-    phone_number = models.CharField(max_length=20)
-    country = models.CharField(max_length=50)
-    state = models.CharField(max_length=50)
-    city = models.CharField(max_length=50)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="feo")
+    # country = models.CharField(max_length=50)
+    # state = models.CharField(max_length=50)
+    # city = models.CharField(max_length=50)
+    location = models.ForeignKey(
+        'mapx_app.Location', on_delete=models.SET_NULL, null=True)
     num_farmers_assigned = models.PositiveIntegerField(default=0)
     num_farms_mapped = models.PositiveIntegerField(default=0)
-    progress_level = models.IntegerField(editable=False)
-    is_deleted = models.BooleanField(default=False)
-    location = models.CharField(max_length=255, null=True, blank=True)
-
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["last_name", "first_name", "email"]),
-        ]
-    def __str__(self):
-        return self.get_full_name()
-
-    def get_full_name(self):
-        return f'{self.first_name} {self.last_name}'
-    
-    def delete(self, *args, **kwargs):
-        self.is_deleted = True
-        self.save()
-
-    def undelete(self):
-        self.is_deleted = False
-        self.save()
-
-    @property
-    def is_active(self):
-        return not self.is_deleted
-    
+     
     #progress level
     @property
     def progress_level(self):
@@ -65,22 +39,25 @@ class FieldOfficer(models.Model):
 
         return progress
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            # Generate a random password for new Field Officers
-            password = User.objects.make_random_password()
+    # def save(self, *args, **kwargs):
+    #     if not self.pk:
+    #         # Generate a random password for new Field Officers
+    #         password = User.objects.make_random_password()
 
-            # Create a User account for the Field Officer
-            user = User.objects.create_user(email=self.email, password=password)
-            self.user = user
+    #         # Create a User account for the Field Officer
+    #         user = User.objects.create_user(email=self.email, password=password)
+    #         self.user = user
 
-            # Send email with login details
-            subject = "Login Details for Mapping App"
-            message = f"Dear {self.first_name},\n\nYour account has been created for the Mapping App.\n\nEmail: {self.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe Mapping App Team"
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
+    #         # Send email with login details
+    #         subject = "Login Details for Mapping App"
+    #         message = f"Dear {self.first_name},\n\nYour account has been created for the Mapping App.\n\nEmail: {self.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe Mapping App Team"
+    #         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
-        super().save(*args, **kwargs)
-        
+    #     super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'
+
 
 class Farmer(models.Model):
     first_name = models.CharField(max_length=100)
@@ -89,18 +66,12 @@ class Farmer(models.Model):
     phone = models.CharField(max_length=20)
     email = models.EmailField(max_length=255, unique=True, verbose_name="email address")
     assigned_field_officer = models.ForeignKey(FieldOfficer, on_delete=models.SET_NULL, null=True)
-    country = models.CharField(max_length=50)
-    state =  models.CharField(max_length=50)
-    city =  models.CharField(max_length=50)
+    location = models.ForeignKey('Location', on_delete=models.SET_NULL, null=True)
     picture = models.ImageField(upload_to='media/')
     is_mapped = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.get_full_name()
-
-    def get_full_name(self):
         return f'{self.first_name} {self.last_name}'
-    
 
     def save(self, *args, **kwargs):
         if not self.folio_id:
@@ -122,19 +93,37 @@ class Farmer(models.Model):
 class Farmland(models.Model):
     farm_name = models.CharField(max_length=100, null=True, blank=True)
     field_officer = models.ForeignKey(FieldOfficer,on_delete=models.SET_NULL, null=True)
-    farmer= models.ForeignKey(Farmer, on_delete=models.CASCADE)
+    farmer= models.ForeignKey(Farmer, on_delete=models.SET_NULL, null=True, related_name='farmlands')
     size = models.DecimalField(max_digits=8, decimal_places=2)
-    area = models.CharField(max_length=50)
+    area = models.CharField(max_length=20)
     longitude = models.FloatField()
     latitude = models.FloatField()
     picture = models.ImageField(upload_to='media/')
     farm_address = models.CharField(max_length=250)
+    is_mapped = models.BooleanField(default=False)
 
 
-from django.db import models
-from django.contrib.auth import get_user_model
+class Country(models.Model):
 
-User = get_user_model()
+    COUNTRY_CHOICES = [
+        (country, country) for code, country in country_names.items()
+    ]
+    name = models.CharField(max_length=150, choices=COUNTRY_CHOICES)
+
+
+class State(models.Model):
+    name = models.CharField(max_length=50)
+
+
+class City(models.Model):
+    name = models.CharField(max_length=50)
+
+
+class Location(models.Model):
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
+    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
+
 
 class ActivityLog(models.Model):
     ACTION_CHOICES = [

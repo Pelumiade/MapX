@@ -3,6 +3,10 @@ from .models import FieldOfficer, Farmer, Farmland
 from rest_framework import serializers
 from .models import ActivityLog
 from rest_framework.reverse import reverse
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 class FarmerListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
@@ -55,75 +59,83 @@ class FarmlandCreateSerializer(serializers.ModelSerializer):
 class FieldOfficerSerializer(serializers.ModelSerializer):
     delete_url = serializers.SerializerMethodField()
     update_url = serializers.SerializerMethodField()
-    location = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    num_farmers_assigned = serializers.SerializerMethodField()
+    num_farms_mapped = serializers.SerializerMethodField()
     
     class Meta:
-        model = FieldOfficer
-        fields = ['email', 'location', 'name', 'first_name', 'last_name', 'email', 'phone_number', 'country', 'state' , 'city', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 'delete_url', 'update_url', 'picture']
-        read_only_fields = ['delete_url', 'update_url', 'location', 'name']
+        model = User
+        # fields = ['email', 'location', 'full_name', 'first_name', 'last_name', 
+        #           'email', 'phone_number', 'country', 'state' , 'city', 
+        #           'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 
+        #           'delete_url', 'update_url', 'picture']
+        fields = ['email', 'country', 'full_name', 'first_name', 'last_name', 
+                  'phone_number', 'location', 'num_farmers_assigned', 'num_farms_mapped',
+                    'delete_url', 'update_url', 'picture']
+        read_only_fields = ['progress_level']
 
 
-    def get_name(self, obj):
-        if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
-            if 'request' in self.context:
-                request = self.context['request']
-                if request.method == 'GET':
-                    # Combine first_name and last_name for GET request (listing)
-                    return f"{obj.first_name} {obj.last_name}"
-        # Return None or a default value if 'first_name' and 'last_name' attributes are not available
-        return None
+    # def get_name(self, obj):
+    #     if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
+    #         if 'request' in self.context:
+    #             request = self.context['request']
+    #             if request.method == 'GET':
+    #                 # Combine first_name and last_name for GET request (listing)
+    #                 return f"{obj.first_name} {obj.last_name}"
+    #     # Return None or a default value if 'first_name' and 'last_name' attributes are not available
+    #     return None
+
+    def get_full_name(self, obj) -> str:
+        return f"{obj.first_name} {obj.last_name}"
     
-    def get_location(self, obj):
+    def get_country(self, obj):
+        return f"{obj.location.state.name}  {obj.location.country.name}"
 
-        if hasattr(obj, 'state') and hasattr(obj, 'city'):
-            if 'request' in self.context:
-                request = self.context['request']
-                if request.method == 'GET':
-                    # Combine state and city for GET request (listing)
-                    return f"{obj.state}, {obj.city}"
-        # Return None or a default value if 'state' and 'city' attributes are not available
-        return None
-
-    def get_delete_url(self, obj):
+    def get_delete_url(self, obj) -> str:
         request = self.context.get('request')
         if request is None:
             return None
         return reverse("mapx_app:fieldofficer_delete",  kwargs={"id": obj.id}, request=request)
         
-    def get_update_url(self, obj):
+    def get_update_url(self, obj) -> str:
         request = self.context.get('request')
         if request is None:
             return None
         return reverse("mapx_app:fieldofficer_update", kwargs={"id": obj.id}, request=request)
     
-
-    def create(self, validated_data):
-        field_officer = FieldOfficer.objects.create(**validated_data)
-        return field_officer
-
-    def update(self, instance, validated_data):
-        instance.picture = validated_data.get('picture', instance.picture)
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.email = validated_data.get('email', instance.email)
-        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
-        instance.country = validated_data.get('country', instance.country)
-        instance.state = validated_data.get('state', instance.state)
-        instance.city = validated_data.get('city', instance.city)
-        instance.save()
-
-        return instance
+    def get_num_farmers_assigned(self, obj) -> str:
+        return obj.feo.num_farmers_assigned
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        if self.context['request'].method in ['GET', 'HEAD']:
-            # Exclude fields during listing
-            del representation['first_name']
-            del representation['last_name']
-            del representation['state']
-            del representation['city']
-        return representation
+    def get_num_farms_mapped(self, obj) -> str:
+        return obj.feo.num_farms_mapped
+    
+    # def create(self, validated_data):
+    #     field_officer = FieldOfficer.objects.create(**validated_data)
+    #     return field_officer
+
+    # def update(self, instance, validated_data):
+    #     instance.picture = validated_data.get('picture', instance.picture)
+    #     instance.first_name = validated_data.get('first_name', instance.first_name)
+    #     instance.last_name = validated_data.get('last_name', instance.last_name)
+    #     instance.email = validated_data.get('email', instance.email)
+    #     instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+    #     instance.country = validated_data.get('country', instance.country)
+    #     instance.state = validated_data.get('state', instance.state)
+    #     instance.city = validated_data.get('city', instance.city)
+    #     instance.save()
+
+    #     return instance
+    
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     if self.context['request'].method in ['GET', 'HEAD']:
+    #         # Exclude fields during listing
+    #         del representation['first_name']
+    #         del representation['last_name']
+    #         del representation['state']
+    #         del representation['city']
+    #     return representation
     
 
 class FarmlandSerializer(serializers.ModelSerializer):

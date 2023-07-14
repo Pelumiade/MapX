@@ -46,13 +46,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'corsheaders',
-    #OWN
+
+    'rest_framework',
     'rest_framework_simplejwt',
     'django_celery_results',
     'django_rest_passwordreset',
-    'rest_framework',
     'drf_spectacular',
+
     'accounts',
     'mapx_app',   
 ]
@@ -183,12 +185,9 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-
     'TITLE': 'MAPX'
 
 }
-
-
 
 # smtp configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

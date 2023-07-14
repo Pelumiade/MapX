@@ -22,26 +22,6 @@ class MyUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class ActiveUserManager(models.Manager):
+class ActiveManager(models.Manager):
    def get_queryset(self):
        return super().get_queryset().filter(is_active=True)
-
-
-class ActiveManager(models.Manager):
- def get_queryset(self):
-    return super(ActiveManager, self).get_queryset().filter(is_deleted=False)
-
-
-class DeletedManager(models.Manager):
- def get_queryset(self):
-    return super(DeletedManager, self).get_queryset().filter(is_deleted=True)
- 
-
-class ApprovedManager(models.Manager):
-   def get_queryset(self):
-      return super().get_queryset().filter(is_approved=True)
-
-
-class UnApprovedManager(models.Manager):
-   def get_queryset(self):
-      return super().get_queryset().filter(is_approved=False)

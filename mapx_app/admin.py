@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import FieldOfficer, Farmer, Farmland
+from .models import FieldOfficer, Farmer, Farmland, Admin
 
 # class FieldOfficerAdmin(admin.ModelAdmin):
 #     list_display = ('firstname', 'lastname','phone_number', 'country', 'state', 'city', 'location', 'num_farmers_assigned', 'num_farms_mapped', 'progress_level')
@@ -26,3 +26,4 @@ from .models import FieldOfficer, Farmer, Farmland
 admin.site.register(FieldOfficer)
 admin.site.register(Farmer)
 admin.site.register(Farmland)
+admin.site.register(Admin)

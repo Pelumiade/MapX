@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.db import models
-from rest_framework import generics
+from rest_framework import generics, status
 from .models import FieldOfficer, Farmer, Farmland, ActivityLog
 from .serializers import FieldOfficerSerializer, FarmerSerializer, FarmerCreateSerializer, FarmerListSerializer, FarmlandSerializer,  FarmlandCreateSerializer, AdminSerializer, AdminFieldOfficerSerializer, AdminFarmlandSerializer, ActivityLogSerializer
 from rest_framework.generics import DestroyAPIView
@@ -66,6 +66,11 @@ class FieldOfficerListCreateView(generics.ListCreateAPIView):
     serializer_class = FieldOfficerSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
 
+    # def perform_create(self, serializer):
+    #     user = serializer.save()
+    #     FieldOfficer.objects.create(user=user)
+    #     return Response('message': 'Field Officer created successfully', status=status.)
+
 
 #Field Officer
 class FarmerCreateView(generics.CreateAPIView):
@@ -124,6 +129,11 @@ class FieldOfficerCreateAPIView(generics.CreateAPIView):
     queryset = FieldOfficer.objects.all()
     serializer_class = FieldOfficerSerializer
     permission_classes = [IsAdminUser]
+
+    def perform_create(self, serializer):
+        user = serializer.save()
+        FieldOfficer.objects.create(user=user)
+        return Response({'message': 'Field Officer created successfully'}, status=status.HTTP_201_CREATED )
 
 
 class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):
