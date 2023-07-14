@@ -14,6 +14,9 @@ class Admin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="admin")
     location = models.ForeignKey(
         'mapx_app.Location', on_delete=models.SET_NULL, null=True)
+    
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'
 
 
 class FieldOfficer(models.Model):
@@ -110,13 +113,22 @@ class Country(models.Model):
     ]
     name = models.CharField(max_length=150, choices=COUNTRY_CHOICES)
 
+    def __str__(self) -> str:
+        return self.name
+    
 
 class State(models.Model):
     name = models.CharField(max_length=50)
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class City(models.Model):
     name = models.CharField(max_length=50)
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Location(models.Model):
@@ -124,6 +136,8 @@ class Location(models.Model):
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
 
+    def __str__(self) -> str:
+        return f"{self.city.name}, {self.state.name}, {self.country.name}"
 
 class ActivityLog(models.Model):
     ACTION_CHOICES = [

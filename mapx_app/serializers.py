@@ -14,7 +14,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Farmer
-        fields = ['id', 'name', 'first_name', 'last_name', 'folio_id', 'phone',  'address', 'email', 'country', 'state', 'city']
+        fields = ['id', 'name', 'first_name', 'last_name', 'folio_id', 'phone',  'address']
    
     def get_name(self, obj):
         if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
@@ -47,7 +47,7 @@ class FarmerCreateSerializer(serializers.ModelSerializer):
 class FarmerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmer
-        fields = ['id', 'first_name', 'last_name', 'phone', 'email',  'country', 'state', 'city']
+        fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'location']
 
 
 class FarmlandCreateSerializer(serializers.ModelSerializer):
@@ -66,14 +66,10 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        # fields = ['email', 'location', 'full_name', 'first_name', 'last_name', 
-        #           'email', 'phone_number', 'country', 'state' , 'city', 
-        #           'num_farmers_assigned', 'num_farms_mapped', 'progress_level', 
-        #           'delete_url', 'update_url', 'picture']
         fields = ['email', 'country', 'full_name', 'first_name', 'last_name', 
-                  'phone_number', 'location', 'num_farmers_assigned', 'num_farms_mapped',
+                  'phone_number', 'num_farmers_assigned', 'num_farms_mapped',
                     'delete_url', 'update_url', 'picture']
-        read_only_fields = ['progress_level']
+
 
 
     # def get_name(self, obj):
@@ -159,7 +155,7 @@ class AdminSerializer(serializers.Serializer):
 class AdminFieldOfficerSerializer(serializers.ModelSerializer):
     class Meta:
         model = FieldOfficer
-        fields = ['first_name','last_name' ,'state', 'country']
+        fields = ['first_name','last_name' , 'location']
 
 
 class AdminFarmlandSerializer(serializers.ModelSerializer):

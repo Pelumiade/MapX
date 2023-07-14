@@ -39,17 +39,21 @@ class LoginSerializer(serializers.Serializer):
                 "location": user.admin.location.country.name,
                 "role": "Admin",
                 "phone_number": user.phone_number.national_number,
+                "access": access,
+                "refresh": refresh,
             }
         else:
             payload = {
                 "email": email,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
-                "designation": "Field Executive Officer",
+                "designation": user.designation,
                 "picture": user.picture.url if user.picture else "Populate with defautl image url",
                 "location": user.feo.location.country.name,
                 "role": "Field Executive Officer",
                 "phone_number": user.phone_number.national_number,
+                "access": access,
+                "refresh": refresh,
             }
         
         return payload

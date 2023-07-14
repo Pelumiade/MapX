@@ -10,7 +10,7 @@ class UserAdmin(BaseUserAdmin):
     list_filter = ('is_superuser', 'is_active')  # Add 'role' to the list_filter field
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'designation', 'location', 'PhoneNumber')}),
+        ('Personal Info', {'fields': ('first_name', 'last_name', 'designation', 'phone_number')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser')}),
         ("Dates", {"fields": ("last_login",)})
     )
