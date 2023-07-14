@@ -90,7 +90,7 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         return f"{obj.first_name} {obj.last_name}"
     
     def get_country(self, obj):
-        return f"{obj.location.state.name}  {obj.location.country.name}"
+        return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
 
     def get_delete_url(self, obj) -> str:
         request = self.context.get('request')
