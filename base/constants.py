@@ -1,0 +1,4 @@
+CREATED , MAPPED = "Created", "Mapped"
+
+SUCCESS, FAILED = "Success", "Failed"
+ACTION_STATUS = [(SUCCESS, SUCCESS), (FAILED, FAILED)]

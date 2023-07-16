@@ -1,9 +1,12 @@
-from rest_framework import serializers
-from .models import FieldOfficer, Farmer, Farmland
-from rest_framework import serializers
-from .models import ActivityLog
-from rest_framework.reverse import reverse
 from django.contrib.auth import get_user_model
+
+from rest_framework import serializers
+from rest_framework.reverse import reverse
+
+from .models import FieldOfficer, Farmer, Farmland, Location
+from .models import ActivityLog
+from collections import OrderedDict
+from base.constants import CREATED, MAPPED
 
 User = get_user_model()
 
@@ -14,7 +17,8 @@ class FarmerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Farmer
-        fields = ['id', 'name', 'first_name', 'last_name', 'folio_id', 'phone',  'address']
+        fields = ['id', 'name', 'first_name', 'last_name',
+                  'folio_id', 'phone',  'address', 'assigned_field_officer', ]
    
     def get_name(self, obj):
         if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
@@ -41,7 +45,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
 class FarmerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmer
-        exclude = ['folio_id', 'assigned_field_officer']
+        exclude = ['folio_id', 'assigned_field_officer', 'picture', 'is_mapped']
 
 
 class FarmerSerializer(serializers.ModelSerializer):
@@ -53,9 +57,32 @@ class FarmerSerializer(serializers.ModelSerializer):
 class FarmlandCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmland
-        fields = ['size', 'area', 'longitude', 'latitude', 'picture', 'farm_address']
+        fields = ['size', 'area', 'farm_address', 'farm_name']
 
-        
+
+class LongLatSerializer(serializers.Serializer):
+    longitude = serializers.FloatField(write_only=True)
+    latitude = serializers.FloatField(write_only=True)
+
+
+class MapFarmlandSerializer(serializers.Serializer):
+    point = LongLatSerializer(many=True, write_only=True)
+    
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        exclude = ['verification_code', 'is_active', 'is_staff', 'is_superuser', 'last_login', 'groups', 'user_permissions', 'designation', 'password', 'picture']
+
+
+class LocationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Location
+        fields = '__all__'
+
+
 class FieldOfficerSerializer(serializers.ModelSerializer):
     delete_url = serializers.SerializerMethodField()
     update_url = serializers.SerializerMethodField()
@@ -63,28 +90,21 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
     num_farmers_assigned = serializers.SerializerMethodField()
     num_farms_mapped = serializers.SerializerMethodField()
+    location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
+    email = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = ['email', 'country', 'full_name', 'first_name', 'last_name', 
                   'phone_number', 'num_farmers_assigned', 'num_farms_mapped',
-                    'delete_url', 'update_url', 'picture']
-
-
-
-    # def get_name(self, obj):
-    #     if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
-    #         if 'request' in self.context:
-    #             request = self.context['request']
-    #             if request.method == 'GET':
-    #                 # Combine first_name and last_name for GET request (listing)
-    #                 return f"{obj.first_name} {obj.last_name}"
-    #     # Return None or a default value if 'first_name' and 'last_name' attributes are not available
-    #     return None
-
+                    'delete_url', 'update_url', 'picture','location']
+        
+    def get_email(self, obj):
+        return obj.user.email
+    
     def get_full_name(self, obj) -> str:
         return f"{obj.first_name} {obj.last_name}"
-    
+
     def get_country(self, obj):
         return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
 
@@ -93,18 +113,110 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         if request is None:
             return None
         return reverse("mapx_app:fieldofficer_delete",  kwargs={"id": obj.id}, request=request)
-        
+
     def get_update_url(self, obj) -> str:
         request = self.context.get('request')
         if request is None:
             return None
         return reverse("mapx_app:fieldofficer_update", kwargs={"id": obj.id}, request=request)
-    
+
     def get_num_farmers_assigned(self, obj) -> str:
         return obj.feo.num_farmers_assigned
-    
+
     def get_num_farms_mapped(self, obj) -> str:
         return obj.feo.num_farms_mapped
+
+        
+class NewFieldSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    location = serializers.PrimaryKeyRelatedField(
+        queryset=Location.objects.all())
+    delete_url = serializers.SerializerMethodField()
+    update_url = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    num_farmers_assigned = serializers.SerializerMethodField()
+    num_farms_mapped = serializers.SerializerMethodField()
+    progress_level = serializers.ReadOnlyField()
+   
+    class Meta:
+        model = FieldOfficer
+        fields = ['user', 'full_name', 'country',
+                  'num_farmers_assigned', 'num_farms_mapped', 'location','progress_level', 'delete_url', 'update_url']
+        
+    def get_full_name(self, obj) -> str:
+        print(obj)
+        if isinstance(obj, OrderedDict): 
+            return f"{obj['user'].first_name} {obj['user'].last_name}"
+        else:
+            return f"{obj.user.first_name} {obj.user.last_name}"
+
+    # def get_full_name(self, obj) -> str:
+    #     user_data = obj.get('user')
+    #     first_name = user_data.get('first_name')
+    #     last_name = user_data.get('last_name')
+    #     return f"{first_name} {last_name}"
+
+    def get_country(self, obj):
+        if isinstance(obj, OrderedDict):
+            return f"{obj['location'].state.name}  {obj['location'].country.name}"
+        else:
+            return f"{obj.location.state.name}  {obj.location.country.name}"
+
+    def get_delete_url(self, obj) -> str:
+        if isinstance(obj, OrderedDict):
+            return None
+        else:
+            request = self.context.get('request')
+            if request is None:
+                return None
+            return reverse("mapx_app:fieldofficer_delete",  kwargs={"id": obj.id}, request=request)
+        
+    def get_update_url(self, obj) -> str:
+        if isinstance(obj, OrderedDict):
+            return None
+        else:
+            request = self.context.get('request')
+            if request is None:
+                return None
+            return reverse("mapx_app:fieldofficer_update", kwargs={"id": obj.id}, request=request)
+    
+    def get_num_farmers_assigned(self, obj) -> str:
+        if isinstance(obj, OrderedDict):
+            return 0
+        else:
+            return obj.num_farmers_assigned
+
+    
+    def get_num_farms_mapped(self, obj) -> str:
+        if isinstance(obj, OrderedDict):
+            return 0
+        else:
+            return obj.num_farms_mapped
+
+    
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     request = self.context.get('request')
+    #     if request.method == 'GET' and 'user' in data:
+    #         del data['user']['first_name']
+    #         del data['user']['last_name']
+    #     return data
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', None)
+        location = validated_data.pop('location', None)
+
+        if user_data:
+            user_serializer = UserSerializer(
+                instance.user, data=user_data, partial=True)
+            user_serializer.is_valid(raise_exception=True)
+            user_serializer.save()
+
+        if location:
+            instance.location = location
+
+        return super().update(instance, validated_data)
     
     # def create(self, validated_data):
     #     field_officer = FieldOfficer.objects.create(**validated_data)
@@ -165,19 +277,43 @@ class AdminFarmlandSerializer(serializers.ModelSerializer):
 
 
 class ActivityLogSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.first_name')
+    actor = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    activity = serializers.SerializerMethodField()
+    date = serializers.SerializerMethodField()
+    actor_name = serializers.SerializerMethodField()
     user_type = serializers.SerializerMethodField()
+    platform = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
 
     class Meta:
         model = ActivityLog
-        fields = ['user', 'user_type', 'action_type', 'platform', 'country', 'timestamp']
+        fields = ['id', 'actor', 'actor_name',
+                  'date', 'status', 'user_type', 'platform', 'country', 'activity']
 
-    def get_user_type(self, obj):
-        if obj.user.is_superuser:
-            return 'admin'
-        elif hasattr(obj.user, 'fieldofficer'):
-            return 'field_officer'
-        else:
-            return 'unknown'
+    def get_activity(self, obj) -> str:
+        if obj.action_type == CREATED:
+            return 'created an feo'
+        elif obj.action_type == MAPPED:
+            return 'mapped a farmland'
+        
+    def get_date(self, obj) -> str:
+        date = obj.timestamp
+        formatted_date = date.strftime('%m/%d/%Y %I:%M%p')
+        return formatted_date
 
+    def get_country(self, obj) -> str:
+        if obj.action_type == MAPPED:
+            return obj.content_object.field_officer.location.country.name
+        return obj.content_object.location.country.name
+    
+    def get_platform(self, obj) -> str:
+        return 'Web'
+    
+    def get_user_type(self, obj) -> str:
+        if hasattr(obj.actor, 'admin'):
+            return 'Admin'
+        return 'FEO'
 
+    def get_actor_name(self, obj) -> str:
+        return obj.actor.get_full_name()
+    

@@ -1,22 +1,24 @@
-from django.shortcuts import render
-
-# Create your views here.
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import models
-from rest_framework import generics, status
-from .models import FieldOfficer, Farmer, Farmland, ActivityLog
-from .serializers import FieldOfficerSerializer, FarmerSerializer, FarmerCreateSerializer, FarmerListSerializer, FarmlandSerializer,  FarmlandCreateSerializer, AdminSerializer, AdminFieldOfficerSerializer, AdminFarmlandSerializer, ActivityLogSerializer
-from rest_framework.generics import DestroyAPIView
-from .permissions import IsSuperuserOrAdminUser, IsFieldOfficerUser
+from django.shortcuts import render
+from rest_framework import generics, status, filters
+from rest_framework.generics import DestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from django_filters.rest_framework import DjangoFilterBackend
+
+from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, City
+from .serializers import (FieldOfficerSerializer, FarmerSerializer, MapFarmlandSerializer, FarmerCreateSerializer,
+                          FarmerListSerializer, FarmlandSerializer, FarmlandCreateSerializer, AdminSerializer,
+                          AdminFieldOfficerSerializer, AdminFarmlandSerializer, ActivityLogSerializer,
+                          NewFieldSerializer)
+from .permissions import IsSuperuserOrAdminUser, IsFieldOfficerUser
 from accounts.models import User
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import FieldOfficer, Farmland, Farmer
-from .serializers import FieldOfficerSerializer
+from base.constants import CREATED, MAPPED, SUCCESS
+from base.mixins import ActivityLogMixin
+from base.pagination import StandardResultsSetPagination
 
 
 class AdminDashboardAPIView(APIView):
@@ -24,7 +26,7 @@ class AdminDashboardAPIView(APIView):
 
     def get(self, request):
         # Total number of field officers
-        field_officer_count = FieldOfficer.objects.count()
+        field_officer_count = FieldOfficer.objects.all().count()
 
         # Total number of mapped farmlands
         mapped_farmland_count = Farmland.objects.filter(is_mapped=True).count()
@@ -32,11 +34,13 @@ class AdminDashboardAPIView(APIView):
         # Total number of unmapped farmlands
         unmapped_farmland_count = Farmland.objects.filter(is_mapped=False).count()
 
-        # Total number of highest farmland in a region (country)
-        highest_farmland_country = Farmland.objects.values('country').annotate(count=models.Count('id')).order_by('-count').first()
+        # # Total number of highest farmland in a region (country)
+        # highest_farmland_country = Farmland.objects.values('country').annotate(count=models.Count('id')).order_by('-count').first()
 
         # Total number of registered farmers
-        registered_farmer_count = Farmer.objects.count()
+        registered_farmer_count = Farmer.objects.all().count()
+
+        total_cities = City.objects.all().count()
 
         # Field officer ranking
         field_officer_ranking = FieldOfficer.objects.annotate(
@@ -52,7 +56,7 @@ class AdminDashboardAPIView(APIView):
             'field_officer_count': field_officer_count,
             'mapped_farmland_count': mapped_farmland_count,
             'unmapped_farmland_count': unmapped_farmland_count,
-            'highest_farmland_country': highest_farmland_country['country'] if highest_farmland_country else None,
+            # 'highest_farmland_country': highest_farmland_country['country'] if highest_farmland_country else None,
             'registered_farmer_count': registered_farmer_count,
             'field_officer_ranking': field_officer_ranking,
             'recently_added_field_officers': FieldOfficerSerializer(recently_added_field_officers, many=True).data,
@@ -61,15 +65,14 @@ class AdminDashboardAPIView(APIView):
         return Response(data)
 
 
-class FieldOfficerListCreateView(generics.ListCreateAPIView):
+class FieldOfficerListView(generics.ListAPIView):
     queryset = FieldOfficer.objects.all()
-    serializer_class = FieldOfficerSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]
-
-    # def perform_create(self, serializer):
-    #     user = serializer.save()
-    #     FieldOfficer.objects.create(user=user)
-    #     return Response('message': 'Field Officer created successfully', status=status.)
+    serializer_class = NewFieldSerializer
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['location__country__name']
+    search_fields = ['first_name', 'last_name',
+                     'country', 'email']
 
 
 #Field Officer
@@ -77,45 +80,56 @@ class FarmerCreateView(generics.CreateAPIView):
     queryset = Farmer.objects.all()
     serializer_class = FarmerCreateSerializer
     permission_classes = [IsAuthenticated, IsFieldOfficerUser]
+    
 
     def perform_create(self, serializer):
-        field_officer = self.request.user.fieldofficer  # Get the field officer associated with the request user
+        field_officer = self.request.user.feo  # Get the field officer associated with the request user
         serializer.save(assigned_field_officer=field_officer)
-
-    # Increase the number of assigned farmers for the field officer
-        field_officer.num_farmers_assigned += 1
-        field_officer.save()
 
   
 class FarmerListAPIView(generics.ListAPIView):
     queryset = Farmer.objects.all()
     serializer_class = FarmerListSerializer
-    permission_classes = [IsAuthenticated, IsFieldOfficerUser, IsSuperuserOrAdminUser]
-
-    def get_queryset(self):
-        field_officer = self.request.user.fieldofficer
-        queryset = self.queryset.filter(assigned_field_officer=field_officer)
-        return queryset
+    permission_classes = [IsAuthenticated]
     
   
 class FarmlandCreateAPIView(generics.CreateAPIView):
+    queryset = Farmland.objects.all()
     serializer_class = FarmlandCreateSerializer
-    permission_classes = [IsAuthenticated,IsFieldOfficerUser]
-
+    permission_classes = [IsAuthenticated, IsFieldOfficerUser]
+  
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
     
     def perform_create(self, serializer):
         farmer_id = self.kwargs['farmer_id']
         farmer = Farmer.objects.get(id=farmer_id)
-        field_officer = self.request.user.fieldofficer  # Get the field officer associated with the request user
-        serializer.save(farmer=farmer, field_officer=field_officer)
+        farmland = serializer.save(farmer=farmer)
+        return Response({'message': 'Farmland created successfully'}, status=status.HTTP_201_CREATED)
+    
 
-        # Increase the number of mapped farmlands for the field officer
-        field_officer.num_farms_mapped += 1
-        field_officer.save()
+class MapFarmlandAPIView(ActivityLogMixin, generics.UpdateAPIView):
+    queryset = Farmland.objects.all()
+    serializer_class = MapFarmlandSerializer
+    lookup_field = 'pk'
 
-        # Update the is_mapped status of the farmer
-        farmer.is_mapped = True
-        farmer.save()
+    def update(self, request, *args, **kwargs):
+        request.data['action'] = MAPPED
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        farmland = self.get_object()
+        self.created_obj = farmland
+        lat_list = serializer.validated_data['point']
+
+        for coordinate in lat_list:
+            Coordinate.objects.create(**coordinate, farmland=farmland)
+
+        # Get the field officer associated with the request user
+        field_officer = self.request.user.feo
+        farmland.field_officer = field_officer
+        farmland.is_mapped = True
+        farmland.save()
+        return Response({'message': 'Farmland has been mapped succesfully'}, status=status.HTTP_200_OK)
 
 
 class FarmerDetailAPIView(generics.RetrieveAPIView):
@@ -125,28 +139,49 @@ class FarmerDetailAPIView(generics.RetrieveAPIView):
    
 
 #Admin
-class FieldOfficerCreateAPIView(generics.CreateAPIView):
+class FieldOfficerCreateAPIView(ActivityLogMixin, generics.CreateAPIView):
     queryset = FieldOfficer.objects.all()
-    serializer_class = FieldOfficerSerializer
-    permission_classes = [IsAdminUser]
+    serializer_class = NewFieldSerializer
+    permission_classes = [IsSuperuserOrAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        request.data['action'] = CREATED
+        return super().post(request, *args, **kwargs)
+
 
     def perform_create(self, serializer):
-        user = serializer.save()
-        FieldOfficer.objects.create(user=user)
-        return Response({'message': 'Field Officer created successfully'}, status=status.HTTP_201_CREATED )
+        location = serializer.validated_data.pop("location")
+        user_data= serializer.validated_data.pop('user')
+        user_dict = dict(user_data)
+        
+        password = User.objects.make_random_password()
+        print(password)
+        user = User.objects.create_user(**user_dict, password=password)
+
+        serializer.validated_data['user'] = user
+        serializer.validated_data['location'] = location
+
+        feo = FieldOfficer.objects.create(user=user, location=location)
+        self.created_obj=feo
+
+        subject = "Login Details for MapX App"
+        message = f"Dear {user.first_name},\n\nYour account has been created for the MapX App.\n\nEmail: {user.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe MapX App Team"
+        send_mail(subject, message,
+                  settings.DEFAULT_FROM_EMAIL, [user.email])
+        return Response({'message': 'Field Officer created successfully'}, status=status.HTTP_201_CREATED)
 
 
 class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):
-    serializer_class = FieldOfficerSerializer
+    serializer_class = NewFieldSerializer
     queryset = FieldOfficer.objects.all()
-    permission_classes = [IsAdminUser, IsAuthenticated]  
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
     lookup_field = 'id'
 
 
-class FieldOfficerListAPIView(generics.ListAPIView):
-    queryset = FieldOfficer.objects.all()
-    serializer_class = FieldOfficerSerializer
-    permission_classes = [IsAdminUser]
+# class FieldOfficerListAPIView(generics.ListAPIView):
+#     queryset = FieldOfficer.objects.all()
+#     serializer_class = FieldOfficerSerializer
+#     permission_classes = [IsAdminUser]
 
 
 class FieldOfficerDeleteAPIView(DestroyAPIView):
@@ -193,9 +228,10 @@ class AdminProfileAPIView(APIView):
         return Response(data)
     
 
-class ActivityLogListAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminUser]
-    def get(self, request):
-        logs = ActivityLog.objects.all()
-        serializer = ActivityLogSerializer(logs, many=True)
-        return Response(serializer.data)
+class ActivityLogListAPIView(ListAPIView):
+    serializer_class = ActivityLogSerializer
+    queryset = ActivityLog.objects.all()
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=SUCCESS)

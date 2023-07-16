@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_rest_passwordreset',
     'drf_spectacular',
+    'django_filters',
 
     'accounts',
     'mapx_app',   

@@ -71,4 +71,14 @@ class VerifyCodeSerializer(serializers.Serializer):
 class SetNewPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     new_password = serializers.CharField()
-    confirm_new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ["email", "new_password", "confirm_password"]
+
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError(
+                {"password": "Password fields didn't match."})
+        return attrs

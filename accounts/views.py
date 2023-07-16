@@ -6,8 +6,8 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-   
-from random import randint
+from .tasks import send_email
+import random
 from rest_framework.views import APIView
 
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -22,7 +22,6 @@ from .serializers import (
     ForgotPasswordSerializer, SetNewPasswordSerializer, 
     VerifyCodeSerializer, LoginSerializer, ChangePasswordSerializer
     )
-
 
 
 class CustomObtainAuthToken(ObtainAuthToken):
@@ -42,79 +41,76 @@ class LoginAPIView(TokenObtainPairView):
         return super().post(request, *args, **kwargs)
     
 
-class ForgotPasswordAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ForgotPasswordSerializer(data=request.data)
+class ForgotPasswordAPIView(GenericAPIView):
+    serializer_class = ForgotPasswordSerializer
+    authentication_classes = ()
+    permission_classes = []
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data['email']
+            email = serializer.validated_data.get('email')
+            print(email)
             try:
-                user = User.objects.get(email=email)
+                user = User.objects.filter(email=email).get()
             except User.DoesNotExist:
-                return Response({'message': 'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid email address. Enter a correct email address"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Generate a 4-digit verification code
-            verification_code = str(randint(1000, 9999))
-
-            # Store the verification code in the user's instance
-            user.verification_code = verification_code
-            user.save()
-
-            # Send verification code to user's email
-            subject = "Password Reset Verification Code"
-            message = f"Your verification code is: {verification_code}"
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
-
-            return Response({'message': 'Verification code sent'}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class VerifyCodeAPIView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = VerifyCodeSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            verification_code = serializer.validated_data['verification_code']
-
-            try:
-                user = User.objects.get(email=email, verification_code=verification_code)
-            except User.DoesNotExist:
-                return Response({'message': 'Invalid verification code'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Clear the verification code from the user's instance
-            user.verification_code = ''
-            user.save()
-
-            return Response({'message': 'Verification successful'}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class SetNewPasswordAPIView(APIView):
-    def put(self, request, *args, **kwargs):
-        serializer = SetNewPasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            new_password = serializer.validated_data['new_password']
-            confirm_new_password = serializer.validated_data['confirm_new_password']
-
-            if new_password != confirm_new_password:
-                return Response({'message': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
-
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                return Response({'message': 'Invalid email address'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Update the user's password
-            user.set_password(new_password)
-            user.save()
-
-            return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
-
+            otp = str(random.randint(1000, 9999))
+            print(otp)
+            user.verification_code = otp
+            user.save(update_fields=["verification_code"])
+            # send email
+            subject = "Password Reset Verification code"
+            body = f'Your verification code is {otp}'
+            data = {"email_body": body, "to_email": email,
+                    "email_subject": subject}
+            send_email(data)
+            return Response({'message': 'Verification code sent successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+class VerifyCodeAPIView(GenericAPIView):
+    serializer_class = VerifyCodeSerializer
+    authentication_classes = ()
+    permission_classes = []
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        verification_code = serializer.validated_data["verification_code"]
+        try:
+            user = User.objects.filter(email=email).get()
+        except User.DoesNotExist:
+            return Response({"message": "Incorrect credential"}, status=status.HTTP_404_NOT_FOUND)
+        print(user.verification_code)
+        if user.verification_code != verification_code:
+            return Response({"message": "Incorrect verification pin."}, status=status.HTTP_400_BAD_REQUEST)
+        user.verification_code = ""
+        user.save(update_fields=["verification_code"])
+        return Response({"message": "verification successful"}, status=status.HTTP_200_OK)
+
+
+class SetNewPasswordAPIView(GenericAPIView):
+    serializer_class = SetNewPasswordSerializer
+    authentication_classes = ()
+    permission_classes = []
+
+    def post(self, request):
+        serilizer = self.get_serializer(data=request.data)
+        serilizer.is_valid(raise_exception=True)
+        email = serilizer.validated_data["email"]
+        new_password = serilizer.validated_data["new_password"]
+        user = User.objects.filter(email=email).get()
+        if user:
+            user.set_password(new_password)
+            user.save()
+            return Response({"message": "Password reset successful"}, status=status.HTTP_200_OK)
+        return Response({"message": "Invalid email address"}, status=status.HTTP_400_BAD_REQUEST)
+
+        
+    
 class ChangePasswordView(generics.UpdateAPIView):
     """
     An endpoint for changing password.

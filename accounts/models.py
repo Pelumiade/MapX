@@ -16,7 +16,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     designation =  models.CharField(max_length=100)
     phone_number = PhoneNumberField(unique=True, null=True)
     picture = models.ImageField(upload_to='media/', blank=True, null=True)
-    verification_code = models.CharField(max_length=100, null=True, blank=True)
+    verification_code = models.CharField(max_length=10, null=True, blank=True)
 
     REQUIRED_FIELDS= []
     USERNAME_FIELD = "email"
