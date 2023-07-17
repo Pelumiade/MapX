@@ -180,7 +180,7 @@ class NewFieldSerializer(serializers.ModelSerializer):
 
     def get_location_detail(self, obj):
         if isinstance(obj, OrderedDict):
-            return f"{obj['location'].city}, {obj['location'].cstate.name}"
+            return f"{obj['location'].city}, {obj['location'].state.name}"
         return f'{obj.location.city}, {obj.location.state.name}'
     
     # def to_representation(self, instance):
