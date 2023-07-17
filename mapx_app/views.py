@@ -156,8 +156,8 @@ class FieldOfficerRankingAPIView(APIView):
         top_3_field_officers = data[:3]
 
         return Response(top_3_field_officers)
-  
-    
+
+
 #FEO STAT
 class AdminStatsAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -296,7 +296,6 @@ class FarmlandCreateAPIView(generics.CreateAPIView):
         return Response({'message': 'Farmland created successfully'}, status=status.HTTP_201_CREATED)
     
     
-
 #MAP A FARMLAND
 class MapFarmlandAPIView(ActivityLogMixin, generics.UpdateAPIView):
     queryset = Farmland.objects.all()
