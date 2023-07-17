@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from .models import FieldOfficer, Farmer, Farmland, Location
+from .models import FieldOfficer, Farmer, Farmland, Location, Country, State
 from .models import ActivityLog
 from collections import OrderedDict
 from base.constants import CREATED, MAPPED
@@ -14,33 +14,22 @@ User = get_user_model()
 class FarmerListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
 
     class Meta:
         model = Farmer
-        fields = ['id', 'name', 'first_name', 'last_name',
-                  'folio_id', 'phone',  'address', 'assigned_field_officer', ]
+        fields = ['id', 'name','folio_id', 'phone',
+                    'address', 'assigned_field_officer', 'is_mapped', 'country']
    
     def get_name(self, obj):
-        if hasattr(obj, 'first_name') and hasattr(obj, 'last_name'):
-            if 'request' in self.context:
-                request = self.context['request']
-                if request.method == 'GET':
-                    # Combine first_name and last_name for GET request (listing)
-                    return f"{obj.first_name} {obj.last_name}"
-        # Return None or a default value if 'first_name' and 'last_name' attributes are not available
-        return None
-    
-    def get_address(self, obj):
+        return f'{obj.first_name} {obj.last_name}'
 
-        if hasattr(obj, 'state') and hasattr(obj, 'city'):
-            if 'request' in self.context:
-                request = self.context['request']
-                if request.method == 'GET':
-                    # Combine state and city for GET request (listing)
-                    return f"{obj.state}, {obj.city}"
-        # Return None or a default value if 'state' and 'city' attributes are not available
-        return None
+    def get_address(self, obj):
+        return f'{obj.location.city},{obj.location.state}'
     
+    def get_country(self, obj):
+        return obj.location.country
+
 
 class FarmerCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,30 +127,25 @@ class NewFieldSerializer(serializers.ModelSerializer):
     num_farmers_assigned = serializers.SerializerMethodField()
     num_farms_mapped = serializers.SerializerMethodField()
     progress_level = serializers.ReadOnlyField()
-   
+    location_detail = serializers.SerializerMethodField()
+
+
     class Meta:
         model = FieldOfficer
         fields = ['user', 'full_name', 'country',
-                  'num_farmers_assigned', 'num_farms_mapped', 'location','progress_level', 'delete_url', 'update_url']
+                  'num_farmers_assigned', 'num_farms_mapped', 'location','progress_level', 'delete_url', 'update_url', 'location_detail']
         
     def get_full_name(self, obj) -> str:
-        print(obj)
         if isinstance(obj, OrderedDict): 
             return f"{obj['user'].first_name} {obj['user'].last_name}"
         else:
             return f"{obj.user.first_name} {obj.user.last_name}"
 
-    # def get_full_name(self, obj) -> str:
-    #     user_data = obj.get('user')
-    #     first_name = user_data.get('first_name')
-    #     last_name = user_data.get('last_name')
-    #     return f"{first_name} {last_name}"
-
     def get_country(self, obj):
         if isinstance(obj, OrderedDict):
-            return f"{obj['location'].state.name}  {obj['location'].country.name}"
+            return obj['location'].country.name
         else:
-            return f"{obj.location.state.name}  {obj.location.country.name}"
+            return obj.location.country.name
 
     def get_delete_url(self, obj) -> str:
         if isinstance(obj, OrderedDict):
@@ -194,6 +178,8 @@ class NewFieldSerializer(serializers.ModelSerializer):
         else:
             return obj.num_farms_mapped
 
+    def get_location_detail(self, obj):
+        return f'{obj.location.city}, {obj.location.state.name}'
     
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
@@ -317,3 +303,23 @@ class ActivityLogSerializer(serializers.ModelSerializer):
     def get_actor_name(self, obj) -> str:
         return obj.actor.get_full_name()
     
+
+class CountryListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = "__all__"
+
+
+class StatesListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = State
+        fields = "__all__"
+
+
+class LocationCityListSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Location
+        fields = ["id", 'city']

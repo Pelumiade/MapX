@@ -5,6 +5,7 @@ from .views import (FieldOfficerCreateAPIView, FieldOfficerUpdateAPIView, Farmer
                     FarmlandCreateAPIView, AdminProfileAPIView, ActivityLogListAPIView, 
                     FieldOfficerListView, FieldOfficerDeleteAPIView, MapFarmlandAPIView)
 
+from . import views
 app_name = 'mapx_app'
 
 urlpatterns = [
@@ -24,5 +25,8 @@ urlpatterns = [
     path('admin/fieldofficers/list/', FieldOfficerListView.as_view(), name='field_officer_list'),
     path('admin/profile/', AdminProfileAPIView.as_view(), name='admin_profile_api'),
     path('activitylog/', ActivityLogListAPIView.as_view(), name='activity_log'),
+    path('countries/', views.CountryListAPIView.as_view(), name='countries'),
+    path('countries/<int:country_pk>/state', views.StatesListAPIView.as_view(), name='states'),
+    path('state/<int:state_pk>/cities', views.LocationCityListAPIView.as_view(), name="cities")
     # path('dashboard/', AdminDashboardAPIView.as_view(), name='dashboard'),
 ]

@@ -58,6 +58,9 @@ class Farmer(models.Model):
     picture = models.ImageField(upload_to='media/')
     is_mapped = models.BooleanField(default=False)
 
+    def get_full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 

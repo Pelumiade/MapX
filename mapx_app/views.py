@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
-from django.shortcuts import render
 from rest_framework import generics, status, filters
 from rest_framework.generics import DestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -9,11 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate
+from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, Location, Country, State
+from . import serializers
 from .serializers import (FieldOfficerSerializer, FarmerSerializer, MapFarmlandSerializer, FarmerCreateSerializer,
                           FarmerListSerializer, FarmlandSerializer, FarmlandCreateSerializer, AdminSerializer,
                           AdminFieldOfficerSerializer, AdminFarmlandSerializer, ActivityLogSerializer,
-                          NewFieldSerializer)
+                          NewFieldSerializer, CountryListSerializer)
 from .permissions import IsSuperuserOrAdminUser, IsFieldOfficerUser
 from accounts.models import User
 from base.constants import CREATED, MAPPED, SUCCESS
@@ -40,7 +40,7 @@ class AdminDashboardAPIView(APIView):
         # Total number of registered farmers
         registered_farmer_count = Farmer.objects.all().count()
 
-        total_cities = City.objects.all().count()
+        total_cities = Location.objects.all().count()
 
         # Field officer ranking
         field_officer_ranking = FieldOfficer.objects.annotate(
@@ -81,7 +81,6 @@ class FarmerCreateView(generics.CreateAPIView):
     serializer_class = FarmerCreateSerializer
     permission_classes = [IsAuthenticated, IsFieldOfficerUser]
     
-
     def perform_create(self, serializer):
         field_officer = self.request.user.feo  # Get the field officer associated with the request user
         serializer.save(assigned_field_officer=field_officer)
@@ -238,4 +237,23 @@ class ActivityLogListAPIView(ListAPIView):
 
 
 class CountryListAPIView(ListAPIView):
-    pass
+    queryset = Country.objects.all()
+    serializer_class = CountryListSerializer
+
+
+class StatesListAPIView(ListAPIView):
+    queryset = State.objects.all()
+    serializer_class = serializers.StatesListSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        country_pk = self.kwargs["country_pk"]
+        return super().get_queryset().filter(country_id=country_pk)
+    
+
+class LocationCityListAPIView(ListAPIView):
+    queryset = Location.objects.all()
+    serializer_class = serializers.LocationCityListSerializer
+
+    def get_queryset(self, *args, **kwargs):
+        state_pk = self.kwargs["state_pk"]
+        return super().get_queryset().filter(state_id=state_pk)
