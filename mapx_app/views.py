@@ -1,3 +1,4 @@
+from .models import FieldOfficer
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
@@ -150,10 +151,13 @@ class RecentFieldOfficersAPIView(APIView):
 
 #         return Response(data)
 
+
+
+
 class FieldOfficerRankingAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
     def get_top_field_officers(self):
-        top_field_officers = FieldOfficer.objects.order_by(
-            '-progress_level')[:3]
+        top_field_officers = FieldOfficer.objects.all()
         return top_field_officers
 
     def get(self, request):
@@ -161,23 +165,45 @@ class FieldOfficerRankingAPIView(APIView):
 
         data = []
         for field_officer in top_field_officers:
+            total_farmer_assigned = field_officer.farmers.count()
+            total_farm_mapped = field_officer.farmlands.count()
+
+            if total_farmer_assigned > 0:
+                progress_level = (total_farm_mapped /
+                                  total_farmer_assigned) * 100
+            else:
+                progress_level = 0
+
             field_officer_data = {
                 'name': f'{field_officer.user.first_name} {field_officer.user.last_name}',
-                'registered_farmers': field_officer.total_numbers_of_farmers,
-                'mapped_farmlands': field_officer.num_farms_mapped,
+                'registered_farmers': total_farmer_assigned,
+                'mapped_farmlands': total_farm_mapped,
+                'progress_level': progress_level,
             }
             data.append(field_officer_data)
 
-        return Response(data)
+        # Sort field officers based on progress level in descending order
+        data.sort(key=lambda x: x['progress_level'], reverse=True)
+
+        # Get the top 3 field officers
+        top_3_field_officers = data[:3]
+
+        return Response(top_3_field_officers)
+
+
 
 class FieldOfficerListView(generics.ListAPIView):
-    queryset = FieldOfficer.objects.all()
+    queryset = FieldOfficer.objects.filter(is_deleted=False).order_by('id')
     serializer_class = NewFieldSerializer
     permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['location__country__name']
     search_fields = ['first_name', 'last_name',
                      'country', 'email']
+    
+    # def get_queryset(self):
+    #     return super().get_queryset().filter(is_deleted=False)
+
 
 
 #Field Officer
@@ -199,7 +225,6 @@ class FarmerListAPIView(generics.ListAPIView):
         if hasattr(self.request.user, 'admin'):
             return Farmer.objects.all()
         return Farmer.objects.filter(assigned_field_officer=self.request.user.feo)
-        
     
   
 class FarmlandCreateAPIView(generics.CreateAPIView):
@@ -280,7 +305,7 @@ class FieldOfficerCreateAPIView(ActivityLogMixin, generics.CreateAPIView):
         return Response({'message': 'Field Officer created successfully'}, status=status.HTTP_201_CREATED)
 
 
-class FieldOfficerUpdateAPIView(generics.UpdateAPIView):
+class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = NewFieldSerializer
     queryset = FieldOfficer.objects.all()
     permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
@@ -293,17 +318,31 @@ class FieldOfficerUpdateAPIView(generics.UpdateAPIView):
 #     permission_classes = [IsAdminUser]
 
 
-class FieldOfficerDeleteAPIView(DestroyAPIView):
-    queryset = FieldOfficer.objects.all()
-    lookup_field = 'id'
+# class FieldOfficerDeleteAPIView(DestroyAPIView):
+#     queryset = FieldOfficer.objects.all()
+#     lookup_field = 'id'
 
-    def perform_destroy(self, instance):
-        instance.is_deleted = True
-        instance.save()
+#     def perform_destroy(self, instance):
+#         instance.user.is_active = False
+#         instance.save()
 
+class FieldOfficerDeleteAPIView(APIView):
+    permission_classes=[IsSuperuserOrAdminUser]
+
+    def delete(self, request, id):
+        try:
+            field_officer = FieldOfficer.objects.get(id=id)
+            field_officer.is_deleted = True
+            field_officer.save()
+            return Response({'message': 'Field Officer was deleted successfully'}, status=status.HTTP_204_NO_CONTENT)  # Success, no content
+        except FieldOfficer.DoesNotExist:
+            return Response(status=404)  # FieldOfficer not found
+        
 
 class AdminProfileAPIView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+
 
     def get(self, request):
         user = request.user  # Get the current logged-in user (admin)

@@ -28,8 +28,8 @@ urlpatterns = [
     path('countries/', views.CountryListAPIView.as_view(), name='countries'),
     path('countries/<int:country_pk>/state', views.StatesListAPIView.as_view(), name='states'),
     path('state/<int:state_pk>/cities', views.LocationCityListAPIView.as_view(), name="cities"),
-    path('dashboard/', AdminDashboardAPIView.as_view(),name='dashboard'),
-    path('admindashboard/', views.GlobalAPIView.as_view(), name='admindashboard'),
-    path('recentfeo/', RecentFieldOfficersAPIView.as_view(), name='recentfeo'),
-   path('feo/ranking/', FieldOfficerRankingAPIView.as_view(), name='feo_ranking')
+    #path('dashboard/', AdminDashboardAPIView.as_view(),name='dashboard'),
+    path('admin/dashboard/', views.GlobalAPIView.as_view(), name='admind_ashboard'),
+    path('recent/feo/', RecentFieldOfficersAPIView.as_view(), name='recent_feo'),
+    path('feo/ranking/', FieldOfficerRankingAPIView.as_view(), name='feo_ranking')
 ]

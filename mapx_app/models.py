@@ -33,6 +33,7 @@ class FieldOfficer(models.Model):
     num_farmers_assigned = models.PositiveIntegerField(default=0)
     num_farms_mapped = models.PositiveIntegerField(default=0)
     progress_level = models.IntegerField()
+    is_deleted = models.BooleanField(default=False)
 
     # progress level
     @property
@@ -53,6 +54,9 @@ class FieldOfficer(models.Model):
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
 
+    # @property
+    # def is_deleted(self):
+    #     return not self.user.is_active
 
 class Farmer(models.Model):
     first_name = models.CharField(max_length=100)
