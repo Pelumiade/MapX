@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import (
-    FieldOfficer, Farmer, Farmland, Admin, Country, State, Location, Coordinate
+    FieldOfficer, Farmer, Farmland, Admin, Country, State, Location, Coordinate, ActivityLog
 )
 
 # class FieldOfficerAdmin(admin.ModelAdmin):
@@ -33,3 +33,4 @@ admin.site.register(Country)
 admin.site.register(State)
 admin.site.register(Location)
 admin.site.register(Coordinate)
+admin.site.register(ActivityLog)

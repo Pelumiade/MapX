@@ -87,9 +87,14 @@ class FarmerCreateView(generics.CreateAPIView):
 
   
 class FarmerListAPIView(generics.ListAPIView):
-    queryset = Farmer.objects.all()
     serializer_class = FarmerListSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if hasattr(self.request.user, 'admin'):
+            return Farmer.objects.all()
+        return Farmer.objects.filter(assigned_field_officer=self.request.user.feo)
+        
     
   
 class FarmlandCreateAPIView(generics.CreateAPIView):

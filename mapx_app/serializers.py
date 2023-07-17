@@ -28,7 +28,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
         return f'{obj.location.city},{obj.location.state}'
     
     def get_country(self, obj):
-        return obj.location.country
+        return obj.location.country.name
 
 
 class FarmerCreateSerializer(serializers.ModelSerializer):
@@ -179,6 +179,8 @@ class NewFieldSerializer(serializers.ModelSerializer):
             return obj.num_farms_mapped
 
     def get_location_detail(self, obj):
+        if isinstance(obj, OrderedDict):
+            return f"{obj['location'].city}, {obj['location'].cstate.name}"
         return f'{obj.location.city}, {obj.location.state.name}'
     
     # def to_representation(self, instance):
@@ -289,6 +291,7 @@ class ActivityLogSerializer(serializers.ModelSerializer):
 
     def get_country(self, obj) -> str:
         if obj.action_type == MAPPED:
+            print(obj)
             return obj.content_object.field_officer.location.country.name
         return obj.content_object.location.country.name
     
