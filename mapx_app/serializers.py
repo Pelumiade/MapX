@@ -80,7 +80,7 @@ class LocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = ['country', 'state', 'city']
 
 
 class FieldOfficerSerializer(serializers.ModelSerializer):

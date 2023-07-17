@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+from pytz import country_names
 
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -6,9 +8,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.core.mail import send_mail
 from django.conf import settings
-
-from datetime import datetime
-from pytz import country_names
 
 from accounts.models import User
 from base.constants import ACTION_STATUS, SUCCESS
@@ -44,22 +43,6 @@ class FieldOfficer(models.Model):
 
         return progress
 
-    # def save(self, *args, **kwargs):
-    #     if not self.pk:
-    #         # Generate a random password for new Field Officers
-    #         password = User.objects.make_random_password()
-
-    #         # Create a User account for the Field Officer
-    #         user = User.objects.create_user(email=self.email, password=password)
-    #         self.user = user
-
-    #         # Send email with login details
-    #         subject = "Login Details for Mapping App"
-    #         message = f"Dear {self.first_name},\n\nYour account has been created for the Mapping App.\n\nEmail: {self.email}\nPassword: {password}\n\nPlease log in using the provided credentials.\n\nBest regards,\nThe Mapping App Team"
-    #         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
-
-    #     super().save(*args, **kwargs)
-    
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
 
@@ -103,25 +86,17 @@ class Farmland(models.Model):
 
 
 class Country(models.Model):
-
     COUNTRY_CHOICES = [
-        (country, country) for code, country in country_names.items()
-    ]
+        (country, country) for code, country in country_names.items()]
     name = models.CharField(max_length=150, choices=COUNTRY_CHOICES)
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
     
 
 class State(models.Model):
     name = models.CharField(max_length=50)
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class City(models.Model):
-    name = models.CharField(max_length=50)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='states', null=True)
 
     def __str__(self) -> str:
         return self.name
@@ -130,10 +105,10 @@ class City(models.Model):
 class Location(models.Model):
     country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
-    city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
+    city = models.CharField(max_length=50, null=True)
 
     def __str__(self) -> str:
-        return f"{self.city.name}, {self.state.name}, {self.country.name}"
+        return f"{self.city}"
     
 
 class ActivityLog(models.Model):

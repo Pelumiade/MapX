@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, City
+from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate
 from .serializers import (FieldOfficerSerializer, FarmerSerializer, MapFarmlandSerializer, FarmerCreateSerializer,
                           FarmerListSerializer, FarmlandSerializer, FarmlandCreateSerializer, AdminSerializer,
                           AdminFieldOfficerSerializer, AdminFarmlandSerializer, ActivityLogSerializer,
@@ -235,3 +235,7 @@ class ActivityLogListAPIView(ListAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(status=SUCCESS)
+
+
+class CountryListAPIView(ListAPIView):
+    pass
