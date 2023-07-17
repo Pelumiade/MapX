@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (FieldOfficerCreateAPIView, FieldOfficerUpdateAPIView, FarmerCreateView, 
                     FarmerListAPIView, FarmerDetailAPIView, 
                     FarmlandCreateAPIView, AdminProfileAPIView, ActivityLogListAPIView, 
-                    FieldOfficerListView, FieldOfficerDeleteAPIView, MapFarmlandAPIView)
+                    FieldOfficerListView, FieldOfficerDeleteAPIView, MapFarmlandAPIView, AdminDashboardAPIView, RecentFieldOfficersAPIView, FieldOfficerRankingAPIView)
 
 from . import views
 app_name = 'mapx_app'
@@ -27,6 +27,9 @@ urlpatterns = [
     path('activitylog/', ActivityLogListAPIView.as_view(), name='activity_log'),
     path('countries/', views.CountryListAPIView.as_view(), name='countries'),
     path('countries/<int:country_pk>/state', views.StatesListAPIView.as_view(), name='states'),
-    path('state/<int:state_pk>/cities', views.LocationCityListAPIView.as_view(), name="cities")
-    # path('dashboard/', AdminDashboardAPIView.as_view(), name='dashboard'),
+    path('state/<int:state_pk>/cities', views.LocationCityListAPIView.as_view(), name="cities"),
+    path('dashboard/', AdminDashboardAPIView.as_view(),name='dashboard'),
+    path('admindashboard/', views.GlobalAPIView.as_view(), name='admindashboard'),
+    path('recentfeo/', RecentFieldOfficersAPIView.as_view(), name='recentfeo'),
+   path('feo/ranking/', FieldOfficerRankingAPIView.as_view(), name='feo_ranking')
 ]

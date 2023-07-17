@@ -6,8 +6,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
+from django.db.models.signals import post_save
 from django.core.mail import send_mail
 from django.conf import settings
+from django.dispatch import receiver
 
 from accounts.models import User
 from base.constants import ACTION_STATUS, SUCCESS
@@ -30,7 +32,7 @@ class FieldOfficer(models.Model):
         'mapx_app.Location', on_delete=models.SET_NULL, null=True)
     num_farmers_assigned = models.PositiveIntegerField(default=0)
     num_farms_mapped = models.PositiveIntegerField(default=0)
-    progress_level = models.IntegerField(editable=False)
+    progress_level = models.IntegerField()
 
     # progress level
     @property
@@ -50,12 +52,6 @@ class FieldOfficer(models.Model):
 
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
-
-############
-    # def progress(self):
-    #     Farmer.objects.filter(assigned_field_officer=self.request.user.feo)
-    #     total_assigned = Farmland.objects.filter(field_officer)
-    #     total_mapped = Farmland.objects
 
 
 class Farmer(models.Model):
@@ -157,3 +153,15 @@ class Coordinate(models.Model):
 
     def __str__(self) -> str:
         return f"Longitude: {self.longitude} Latitude: {self.latitude}"
+
+
+
+@receiver(post_save, sender=FieldOfficer)
+def progress_level(sender, instance, **kwargs):
+    total_farmer_assigned = instance.farmers.count()
+    total_farm_mapped = instance.farmlands.count()
+
+    try:
+        return (total_farm_mapped/total_farmer_assigned) * 100
+    except ZeroDivisionError:
+        return 0

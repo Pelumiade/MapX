@@ -81,6 +81,7 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
     num_farms_mapped = serializers.SerializerMethodField()
     location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
     email = serializers.SerializerMethodField()
+   
     
     class Meta:
         model = User
@@ -95,6 +96,9 @@ class FieldOfficerSerializer(serializers.ModelSerializer):
         return f"{obj.first_name} {obj.last_name}"
 
     def get_country(self, obj):
+        return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
+    
+    def get_city(self, obj):
         return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
 
     def get_delete_url(self, obj) -> str:
@@ -128,11 +132,11 @@ class NewFieldSerializer(serializers.ModelSerializer):
     num_farms_mapped = serializers.SerializerMethodField()
     progress_level = serializers.ReadOnlyField()
     location_detail = serializers.SerializerMethodField()
-
+    #city = serializers.SerializerMethodField()
 
     class Meta:
         model = FieldOfficer
-        fields = ['user', 'full_name', 'country',
+        fields = ['user', 'full_name', 'country', 'id',
                   'num_farmers_assigned', 'num_farms_mapped', 'location','progress_level', 'delete_url', 'update_url', 'location_detail']
         
     def get_full_name(self, obj) -> str:
@@ -146,6 +150,7 @@ class NewFieldSerializer(serializers.ModelSerializer):
             return obj['location'].country.name
         else:
             return obj.location.country.name
+        
 
     def get_delete_url(self, obj) -> str:
         if isinstance(obj, OrderedDict):
@@ -183,14 +188,6 @@ class NewFieldSerializer(serializers.ModelSerializer):
             return f"{obj['location'].city}, {obj['location'].state.name}"
         return f'{obj.location.city}, {obj.location.state.name}'
     
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-    #     request = self.context.get('request')
-    #     if request.method == 'GET' and 'user' in data:
-    #         del data['user']['first_name']
-    #         del data['user']['last_name']
-    #     return data
-
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
         location = validated_data.pop('location', None)
@@ -206,33 +203,7 @@ class NewFieldSerializer(serializers.ModelSerializer):
 
         return super().update(instance, validated_data)
     
-    # def create(self, validated_data):
-    #     field_officer = FieldOfficer.objects.create(**validated_data)
-    #     return field_officer
-
-    # def update(self, instance, validated_data):
-    #     instance.picture = validated_data.get('picture', instance.picture)
-    #     instance.first_name = validated_data.get('first_name', instance.first_name)
-    #     instance.last_name = validated_data.get('last_name', instance.last_name)
-    #     instance.email = validated_data.get('email', instance.email)
-    #     instance.phone_number = validated_data.get('phone_number', instance.phone_number)
-    #     instance.country = validated_data.get('country', instance.country)
-    #     instance.state = validated_data.get('state', instance.state)
-    #     instance.city = validated_data.get('city', instance.city)
-    #     instance.save()
-
-    #     return instance
-    
-    # def to_representation(self, instance):
-    #     representation = super().to_representation(instance)
-    #     if self.context['request'].method in ['GET', 'HEAD']:
-    #         # Exclude fields during listing
-    #         del representation['first_name']
-    #         del representation['last_name']
-    #         del representation['state']
-    #         del representation['city']
-    #     return representation
-    
+   
 
 class FarmlandSerializer(serializers.ModelSerializer):
     class Meta:

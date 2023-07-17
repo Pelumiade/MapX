@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
+from django.db.models import Count
 from rest_framework import generics, status, filters
 from rest_framework.generics import DestroyAPIView, ListAPIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -8,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, Location, Country, State
+from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, Location, Country, State, Admin
 from . import serializers
 from .serializers import (FieldOfficerSerializer, FarmerSerializer, MapFarmlandSerializer, FarmerCreateSerializer,
                           FarmerListSerializer, FarmlandSerializer, FarmlandCreateSerializer, AdminSerializer,
@@ -63,7 +64,111 @@ class AdminDashboardAPIView(APIView):
         }
 
         return Response(data)
+    
 
+class GlobalAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
+    def get_field_officer_count(self):
+        count = FieldOfficer.objects.count()
+        return count
+
+    def get_mapped_farmlands_count(self):
+        count = Farmland.objects.filter(is_mapped=True).count()
+        return count
+
+    def get_unmapped_farmlands_count(self):
+        count = Farmland.objects.filter(is_mapped=False).count()
+        return count
+
+    def get_highest_mapped_country(self):
+        country = Farmland.objects.values('farmer__location__country__name').annotate(
+            count=Count('id')).order_by('-count').first()
+        return country['farmer__location__country__name'] if country else None
+
+    def get_total_farmers(self):
+        count = Farmer.objects.count()
+        return count
+
+    def get_total_cities(self):
+        count = Location.objects.values('city').distinct().count()
+        return count
+
+    def get(self, request):
+        field_officer_count = self.get_field_officer_count()
+        mapped_farmlands_count = self.get_mapped_farmlands_count()
+        unmapped_farmlands_count = self.get_unmapped_farmlands_count()
+        highest_mapped_country = self.get_highest_mapped_country()
+        total_farmers = self.get_total_farmers()
+        total_cities = self.get_total_cities()
+
+        data = {
+            'field_officer_count': field_officer_count,
+            'mapped_farmlands_count': mapped_farmlands_count,
+            'unmapped_farmlands_count': unmapped_farmlands_count,
+            'highest_mapped_country': highest_mapped_country,
+            'total_farmers': total_farmers,
+            'total_cities': total_cities
+        }
+
+        return Response(data)
+    
+
+class RecentFieldOfficersAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
+    def get(self, request):
+        recent_field_officers = FieldOfficer.objects.order_by('-id')[:3]
+
+        data = []
+        for field_officer in recent_field_officers:
+            field_officer_data = {
+                'name': f'{field_officer.user.first_name} {field_officer.user.last_name}',
+                'location': str(field_officer.location),
+            }
+            data.append(field_officer_data)
+
+        return Response(data)
+    
+
+# class RecentFieldOfficerAPIView(APIView):
+#     permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
+#     def get_recent_field_officers(self, admin_id):
+#         admin = Admin.objects.get(id=admin_id)
+#         recent_field_officers = FieldOfficer.objects.filter(
+#             user__admin=admin).order_by('-id')[:3]
+#         return recent_field_officers
+
+#     def get(self, request, admin_id):
+#         recent_field_officers = self.get_recent_field_officers(admin_id)
+
+#         data = []
+#         for field_officer in recent_field_officers:
+#             field_officer_data = {
+#                 'name': f'{field_officer.user.first_name} {field_officer.user.last_name}',
+#                 'location': str(field_officer.location),
+#             }
+#             data.append(field_officer_data)
+
+#         return Response(data)
+
+class FieldOfficerRankingAPIView(APIView):
+    def get_top_field_officers(self):
+        top_field_officers = FieldOfficer.objects.order_by(
+            '-progress_level')[:3]
+        return top_field_officers
+
+    def get(self, request):
+        top_field_officers = self.get_top_field_officers()
+
+        data = []
+        for field_officer in top_field_officers:
+            field_officer_data = {
+                'name': f'{field_officer.user.first_name} {field_officer.user.last_name}',
+                'registered_farmers': field_officer.total_numbers_of_farmers,
+                'mapped_farmlands': field_officer.num_farms_mapped,
+            }
+            data.append(field_officer_data)
+
+        return Response(data)
 
 class FieldOfficerListView(generics.ListAPIView):
     queryset = FieldOfficer.objects.all()
@@ -175,7 +280,7 @@ class FieldOfficerCreateAPIView(ActivityLogMixin, generics.CreateAPIView):
         return Response({'message': 'Field Officer created successfully'}, status=status.HTTP_201_CREATED)
 
 
-class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):
+class FieldOfficerUpdateAPIView(generics.UpdateAPIView):
     serializer_class = NewFieldSerializer
     queryset = FieldOfficer.objects.all()
     permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
