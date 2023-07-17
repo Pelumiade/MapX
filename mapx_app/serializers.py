@@ -1,12 +1,11 @@
+from collections import OrderedDict
 from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-
-from .models import FieldOfficer, Farmer, Farmland, Location, Country, State
-from .models import ActivityLog
-from collections import OrderedDict
 from base.constants import CREATED, MAPPED
+from .models import (
+    FieldOfficer, Farmer, Farmland, Location, Country, State, ActivityLog
+)
 
 User = get_user_model()
 
@@ -29,7 +28,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
     
     def get_country(self, obj):
         return obj.location.country.name
-
+    
 
 class FarmerCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,54 +69,6 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = ['country', 'state', 'city']
-
-
-class FieldOfficerSerializer(serializers.ModelSerializer):
-    delete_url = serializers.SerializerMethodField()
-    update_url = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()
-    num_farmers_assigned = serializers.SerializerMethodField()
-    num_farms_mapped = serializers.SerializerMethodField()
-    location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
-    email = serializers.SerializerMethodField()
-   
-    
-    class Meta:
-        model = User
-        fields = ['email', 'country', 'full_name', 'first_name', 'last_name', 
-                  'phone_number', 'num_farmers_assigned', 'num_farms_mapped',
-                    'delete_url', 'update_url', 'picture','location']
-        
-    def get_email(self, obj):
-        return obj.user.email
-    
-    def get_full_name(self, obj) -> str:
-        return f"{obj.first_name} {obj.last_name}"
-
-    def get_country(self, obj):
-        return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
-    
-    def get_city(self, obj):
-        return f"{obj.feo.location.state.name}  {obj.feo.location.country.name}"
-
-    def get_delete_url(self, obj) -> str:
-        request = self.context.get('request')
-        if request is None:
-            return None
-        return reverse("mapx_app:fieldofficer_delete",  kwargs={"id": obj.id}, request=request)
-
-    def get_update_url(self, obj) -> str:
-        request = self.context.get('request')
-        if request is None:
-            return None
-        return reverse("mapx_app:fieldofficer_update", kwargs={"id": obj.id}, request=request)
-
-    def get_num_farmers_assigned(self, obj) -> str:
-        return obj.feo.num_farmers_assigned
-
-    def get_num_farms_mapped(self, obj) -> str:
-        return obj.feo.num_farms_mapped
 
         
 class NewFieldSerializer(serializers.ModelSerializer):
@@ -202,8 +153,7 @@ class NewFieldSerializer(serializers.ModelSerializer):
             instance.location = location
 
         return super().update(instance, validated_data)
-    
-   
+      
 
 class FarmlandSerializer(serializers.ModelSerializer):
     class Meta:

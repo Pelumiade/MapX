@@ -1,10 +1,7 @@
-from django.utils import timezone
-
 from tablib import Dataset
 from django.http import HttpResponse
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models.functions import TruncMonth
 from django.db.models import Count
 from rest_framework import generics, status, filters
 from rest_framework.generics import ListAPIView
@@ -12,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, Location, Country, State, Admin
+from .models import FieldOfficer, Farmer, Farmland, ActivityLog, Coordinate, Location, Country, State
 from . import serializers
 from datetime import datetime
 from django.contrib.auth import get_user_model
@@ -159,8 +156,9 @@ class FieldOfficerRankingAPIView(APIView):
         top_3_field_officers = data[:3]
 
         return Response(top_3_field_officers)
+  
     
-
+#FEO STAT
 class AdminStatsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

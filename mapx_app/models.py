@@ -1,16 +1,12 @@
-import uuid
 from datetime import datetime
+import uuid
 from pytz import country_names
-
-from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.mail import send_mail
 from django.db import models
 from django.db.models.signals import post_save
-from django.core.mail import send_mail
-from django.conf import settings
 from django.dispatch import receiver
-
 from accounts.models import User
 from base.constants import ACTION_STATUS, SUCCESS
 
@@ -54,9 +50,6 @@ class FieldOfficer(models.Model):
     def __str__(self):
         return f'{self.user.first_name} {self.user.last_name}'
 
-    # @property
-    # def is_deleted(self):
-    #     return not self.user.is_active
 
 class Farmer(models.Model):
     first_name = models.CharField(max_length=100)
@@ -157,7 +150,6 @@ class Coordinate(models.Model):
 
     def __str__(self) -> str:
         return f"Longitude: {self.longitude} Latitude: {self.latitude}"
-
 
 
 @receiver(post_save, sender=FieldOfficer)

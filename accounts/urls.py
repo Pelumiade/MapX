@@ -1,6 +1,6 @@
 
 from .views import ChangePasswordView, ForgotPasswordAPIView, VerifyCodeAPIView, SetNewPasswordAPIView, LogoutView, LoginAPIView
-from django.urls import path, include
+from django.urls import path
 
 urlpatterns = [
     path('api/change_password/', ChangePasswordView.as_view(), name='change_password'),
