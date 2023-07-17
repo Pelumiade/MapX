@@ -2,10 +2,12 @@ from django.urls import path
 
 from .views import (FieldOfficerCreateAPIView, FieldOfficerUpdateAPIView, FarmerCreateView, 
                     FarmerListAPIView, FarmerDetailAPIView, 
-                    FarmlandCreateAPIView, AdminProfileAPIView, ActivityLogListAPIView, 
-                    FieldOfficerListView, FieldOfficerDeleteAPIView, MapFarmlandAPIView, AdminDashboardAPIView, RecentFieldOfficersAPIView, FieldOfficerRankingAPIView)
+                    FarmlandCreateAPIView, ActivityLogListAPIView, 
+                    FieldOfficerListView, FieldOfficerDeleteAPIView, MapFarmlandAPIView, 
+                    FieldOfficerExportAPIView, RecentFieldOfficersAPIView,
+                    LocationCityListAPIView, FieldOfficerRankingAPIView, 
+                    AdminStatsAPIView, StatesListAPIView, GlobalDashboardAPIView, CountryListAPIView)
 
-from . import views
 app_name = 'mapx_app'
 
 urlpatterns = [
@@ -23,13 +25,16 @@ urlpatterns = [
     path('admin/fieldofficers/<int:id>/update/', FieldOfficerUpdateAPIView.as_view(), name='fieldofficer_update'),
     path('fieldofficer/<int:id>/delete/', FieldOfficerDeleteAPIView.as_view(), name='fieldofficer_delete'),
     path('admin/fieldofficers/list/', FieldOfficerListView.as_view(), name='field_officer_list'),
-    path('admin/profile/', AdminProfileAPIView.as_view(), name='admin_profile_api'),
+    #path('admin/profile/', AdminProfileAPIView.as_view(), name='admin_profile_api'),
     path('activitylog/', ActivityLogListAPIView.as_view(), name='activity_log'),
-    path('countries/', views.CountryListAPIView.as_view(), name='countries'),
-    path('countries/<int:country_pk>/state', views.StatesListAPIView.as_view(), name='states'),
-    path('state/<int:state_pk>/cities', views.LocationCityListAPIView.as_view(), name="cities"),
+    path('countries/', CountryListAPIView.as_view(), name='countries'),
+    path('countries/<int:country_pk>/state', StatesListAPIView.as_view(), name='states'),
+    path('state/<int:state_pk>/cities', LocationCityListAPIView.as_view(), name="cities"),
     #path('dashboard/', AdminDashboardAPIView.as_view(),name='dashboard'),
-    path('admin/dashboard/', views.GlobalAPIView.as_view(), name='admind_ashboard'),
+    path('admin/dashboard/', GlobalDashboardAPIView.as_view(), name='admind_ashboard'),
     path('recent/feo/', RecentFieldOfficersAPIView.as_view(), name='recent_feo'),
-    path('feo/ranking/', FieldOfficerRankingAPIView.as_view(), name='feo_ranking')
+    path('feo/ranking/', FieldOfficerRankingAPIView.as_view(), name='feo_ranking'),
+    path('export_table/', FieldOfficerExportAPIView.as_view(), name='export_table'),
+    path('admin/stat/', AdminStatsAPIView.as_view(), name='admin_stat')
+
 ]

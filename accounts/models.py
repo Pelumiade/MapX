@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin)
+from django.utils.timezone import now
 
 from base.managers import MyUserManager, ActiveManager
 from phonenumber_field.modelfields import PhoneNumberField
@@ -14,9 +15,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     designation =  models.CharField(max_length=100)
-    phone_number = PhoneNumberField(unique=True, null=True)
+    phone_number = PhoneNumberField(null=True)
     picture = models.ImageField(upload_to='media/', blank=True, null=True)
     verification_code = models.CharField(max_length=10, null=True, blank=True)
+    created_at = models.DateTimeField(default=now)
 
     REQUIRED_FIELDS= []
     USERNAME_FIELD = "email"

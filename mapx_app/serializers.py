@@ -46,7 +46,7 @@ class FarmerSerializer(serializers.ModelSerializer):
 class FarmlandCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmland
-        fields = ['size', 'area', 'farm_address', 'farm_name']
+        fields = ['id','size', 'area', 'farm_address', 'farm_name']
 
 
 class LongLatSerializer(serializers.Serializer):
