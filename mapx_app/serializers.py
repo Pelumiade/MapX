@@ -14,12 +14,14 @@ class FarmerListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
     address = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
+    assigned_field_officer = serializers.CharField(source='assigned_field_officer.user.get_full_name')
+
 
     class Meta:
         model = Farmer
         fields = ['id', 'name','folio_id', 'phone',
                     'address', 'assigned_field_officer', 'email', 'is_mapped', 'country']
-   
+        
     def get_name(self, obj):
         return f'{obj.first_name} {obj.last_name}'
 
@@ -85,6 +87,7 @@ class NewFieldSerializer(serializers.ModelSerializer):
     location_detail = serializers.SerializerMethodField()
     #city = serializers.SerializerMethodField()
 
+
     class Meta:
         model = FieldOfficer
         fields = ['user', 'full_name', 'country', 'id',
@@ -102,7 +105,6 @@ class NewFieldSerializer(serializers.ModelSerializer):
         else:
             return obj.location.country.name
         
-
     def get_delete_url(self, obj) -> str:
         if isinstance(obj, OrderedDict):
             return None
@@ -126,7 +128,6 @@ class NewFieldSerializer(serializers.ModelSerializer):
             return 0
         else:
             return obj.num_farmers_assigned
-
     
     def get_num_farms_mapped(self, obj) -> str:
         if isinstance(obj, OrderedDict):
