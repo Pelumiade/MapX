@@ -36,13 +36,18 @@ class GlobalDashboardAPIView(APIView):
         return count
 
     def get_unmapped_farmlands_count(self):
-        count = Farmland.objects.filter(is_mapped=False).count()
+        count = Farmer.objects.filter(is_mapped=False).count()
         return count
 
     def get_highest_mapped_country(self):
-        country = Farmland.objects.values('farmer__location__country__name').annotate(
+        country_count = Farmland.objects.values('farmer__location__country').annotate(
             count=Count('id')).order_by('-count').first()
-        return country['farmer__location__country__name'] if country else None
+
+        if country_count:
+            count = country_count['count']
+            return count
+        else:
+            return None
 
     def get_total_farmers(self):
         count = Farmer.objects.count()
