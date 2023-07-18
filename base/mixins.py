@@ -11,7 +11,9 @@ class ActivityLogMixin:
     log_message = None
 
     def _get_action_type(self, request):
+        print(request.data)
         action = request.data.get("action")
+        print(action)
         if request.method.upper() == "POST":
             if action == CREATED:
                 return CREATED
@@ -53,5 +55,6 @@ class ActivityLogMixin:
 
     def finalize_response(self, request, *args, **kwargs):
         response = super().finalize_response(request, *args, **kwargs)
+        print(request)
         self._write_log(request, response)
         return response

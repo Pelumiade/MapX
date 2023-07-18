@@ -28,7 +28,7 @@ from base.pagination import StandardResultsSetPagination
 class GlobalDashboardAPIView(APIView):
     permission_classes = [IsAuthenticated, IsSuperuserOrAdminUser]
     def get_field_officer_count(self):
-        count = FieldOfficer.objects.count()
+        count = FieldOfficer.objects.filter(is_deleted=False).count()
         return count
 
     def get_mapped_farmlands_count(self):
@@ -157,33 +157,6 @@ class FieldOfficerRankingAPIView(APIView):
 
         return Response(top_3_field_officers)
 
-
-#FEO STAT
-class AdminStatsAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-
-        # Total number of field officers
-        total_field_officers = FieldOfficer.objects.count()
-
-        # Number of field officers created by the logged-in user
-        user_field_officers = FieldOfficer.objects.filter(user=user).count()
-
-        # Number of field officers created in the current month
-        current_month = datetime.now().month
-        field_officers_created_in_current_month = get_user_model().objects.filter(
-            is_staff=True, designation='Field Officer', created_at__month=current_month
-        ).count()
-        data = {
-            'total_field_officers': total_field_officers,
-            'user_field_officers': user_field_officers,
-            'current_month_field_officers': field_officers_created_in_current_month,
-        }
-
-        return Response(data)
-    
 
 #TO UPDATE FEO
 class FieldOfficerUpdateAPIView(generics.RetrieveUpdateAPIView):

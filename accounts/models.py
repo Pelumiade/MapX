@@ -18,7 +18,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = PhoneNumberField(null=True)
     picture = models.ImageField(upload_to='media/', blank=True, null=True)
     verification_code = models.CharField(max_length=10, null=True, blank=True)
-    created_at = models.DateTimeField(default=now)
+    # created_at = models.DateTimeField(default=now)
 
     REQUIRED_FIELDS= []
     USERNAME_FIELD = "email"
