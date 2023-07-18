@@ -18,7 +18,7 @@ class FarmerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Farmer
         fields = ['id', 'name','folio_id', 'phone',
-                    'address', 'assigned_field_officer', 'is_mapped', 'country']
+                    'address', 'assigned_field_officer', 'email', 'is_mapped', 'country']
    
     def get_name(self, obj):
         return f'{obj.first_name} {obj.last_name}'
