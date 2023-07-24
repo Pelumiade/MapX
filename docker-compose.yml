@@ -5,7 +5,7 @@ services:
     image: f63f357c7554b2827283d936dbb1984ba622165cd8adea4706f3e2f2eb7f71df
     restart: on-failure
     command: bash -c "python manage.py collectstatic --no-input && gunicorn -b 0.0.0.0:8019 MapX.wsgi"
-    #command: bash -c "python manage.py runserver"
+    # command: bash -c "python manage.py runserver"
     volumes:
      - ./.env:/home/app/.env
      - ./static/:/home/app/staticfiles
