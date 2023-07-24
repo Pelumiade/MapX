@@ -3,6 +3,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
+
 User = get_user_model()
 
 
@@ -21,8 +24,15 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        user = User.objects.filter(email=email).get()
+        # user = User.objects.filter(email=email).get()
 
+        user = authenticate(email=email, password=password)
+
+        if user is None:
+            # If authentication fails, raise AuthenticationFailed exception
+            raise AuthenticationFailed("Invalid email or password.")
+
+        
         refresh_token = RefreshToken.for_user(user)
         access = str(refresh_token.access_token)
         refresh = str(refresh_token)
