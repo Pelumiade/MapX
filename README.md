@@ -1,52 +1,38 @@
-﻿amqp==5.1.1
-asgiref==3.7.2
-attrs==23.1.0
-billiard==4.1.0
-celery==5.3.1
-click==8.1.3
-click-didyoumean==0.3.0
-click-plugins==1.1.1
-click-repl==0.3.0
-colorama==0.4.6
-dj-database-url==2.0.0
-Django==4.2.3
-django-celery-results==2.5.1
-django-cors-headers==4.2.0
-django-cors-middleware==1.5.0
-django-model-utils==4.3.1
-django-phonenumber-field==7.1.0
-django-phonenumbers==1.0.1
-django-rest-passwordreset==1.3.0
-django-restframework==0.0.1
-djangorestframework==3.14.0
-djangorestframework-simplejwt==5.2.2
-drf-spectacular==0.26.3
-gunicorn==20.1.0
-inflection==0.5.1
-jsonschema==4.18.0
-jsonschema-specifications==2023.6.1
-kombu==5.3.1
-phonenumbers==8.13.15
-Pillow==10.0.0
-prompt-toolkit==3.0.39
-psycopg==3.1.9
-psycopg2==2.9.6
-psycopg2-binary==2.9.6
-PyJWT==2.7.0
-python-dateutil==2.8.2
-python-dotenv==1.0.0
-pytz==2023.3
-PyYAML==6.0
-referencing==0.29.1
-rpds-py==0.8.10
-six==1.16.0
-sqlparse==0.4.4
-swapper==1.3.0
-tqdm==4.65.0
-typing_extensions==4.7.1
-tzdata==2023.3
-uritemplate==4.1.1
-vine==5.0.0
-wcwidth==0.2.6
-whitenoise==6.5.0
+# MapX: Agricultural Data Management
+
+MapX is a comprehensive Django application designed to facilitate the management and optimization of agricultural data. The project empowers field officers and administrators to oversee and enhance farming operations efficiently.
+
+## Introduction
+
+MapX is built to address the complexities of managing agricultural data by providing a scalable and user-friendly solution. It leverages Django's robust framework and Django Rest Framework for creating powerful and secure RESTful APIs.
+
+## Features
+
+- **Entity Modeling:**
+  - Define Django models for administrators, field officers, farmers, farmlands, and geographical details.
+  - Establish relationships between entities to represent the agricultural system's structure.
+
+- **Data Calculations:**
+  - Implement dynamic calculations for tracking the progress level of field officers based on assigned farmers and mapped farmlands.
+
+- **API Endpoints:**
+  - Utilize Django Rest Framework to create comprehensive API endpoints.
+  - Features include creating and managing field officers, farmers, mapping farmlands, and exporting data to CSV.
+
+- **User Management:**
+  - Implement user creation and management, including the automatic sending of login credentials via email upon account creation for field officers.
+
+- **Geo-Location Handling:**
+  - Manage geo-location data with a focus on farmland mapping, including coordinates and associated details.
+
+- **Dashboard and Statistics:**
+  - Provide a global dashboard API endpoint offering statistics such as field officer counts, mapped/unmapped farmlands, and other relevant metrics.
+
+- **Permission Control:**
+  - Implement custom permission classes to control access to various views and endpoints, ensuring secure and role-based interactions with the system.
+
+- **Logging and Activities:**
+  - Include an activity log system (ActivityLog) to track significant actions within the application for transparency and accountability.
+
+
 
